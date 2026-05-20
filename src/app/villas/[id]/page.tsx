@@ -1,12 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, BedDouble, Users } from "lucide-react";
-import { prisma } from "@/lib/prisma";
-import { formatPrice } from "@/lib/villa";
+import { getVillaById, formatPrice } from "@/lib/villa";
+import { getGalleryImageUrls } from "@/lib/images";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { VillaViewTracker } from "@/components/villa/VillaViewTracker";
 import { ContactRevealPanel } from "@/components/villa/ContactRevealPanel";
+import { VillaImageCarousel } from "@/components/villa/VillaImageCarousel";
 
 export default async function VillaDetailPage({
   params,
@@ -17,19 +17,10 @@ export default async function VillaDetailPage({
   const { t } = await getTranslations();
   const locale = await getLocale();
 
-  const villa = await prisma.villa.findUnique({
-    where: { id, isPublished: true },
-    include: {
-      city: true,
-      facilities: { include: { facility: true } },
-    },
-  });
-
+  const villa = await getVillaById(id);
   if (!villa) notFound();
 
-  const imageSrc =
-    villa.imageUrl ??
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80";
+  const images = getGalleryImageUrls(villa);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -42,9 +33,9 @@ export default async function VillaDetailPage({
         ← {t("villa.backToVillas")}
       </Link>
 
-      <div className="relative mb-8 aspect-[16/9] overflow-hidden rounded-2xl">
-        <Image src={imageSrc} alt={villa.title} fill className="object-cover" priority />
-        <span className="absolute right-4 top-4 rounded-full bg-white px-4 py-2 text-sm font-semibold shadow">
+      <div className="relative">
+        <VillaImageCarousel images={images} alt={villa.title} />
+        <span className="absolute right-4 top-4 z-10 rounded-full bg-white px-4 py-2 text-sm font-semibold shadow">
           {formatPrice(villa.price, villa.pricePeriod, locale)}
         </span>
       </div>

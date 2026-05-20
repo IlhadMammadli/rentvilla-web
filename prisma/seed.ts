@@ -134,6 +134,8 @@ async function main() {
       where: { userId: demoOwner.id },
     });
     if (existing === 0) {
+      const mainUrl =
+        "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80";
       const villa1 = await prisma.villa.create({
         data: {
           userId: demoOwner.id,
@@ -147,10 +149,24 @@ async function main() {
           roomCount: 5,
           contactName: "Rəşad Məmmədov",
           contactPhone: "+994501234567",
-          imageUrl:
-            "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80",
+          imageUrl: mainUrl,
           isPreview: true,
           address: "Bakı, Abşeron",
+          images: {
+            create: [
+              { url: mainUrl, isMain: true, sortOrder: 0 },
+              {
+                url: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80",
+                isMain: false,
+                sortOrder: 1,
+              },
+              {
+                url: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&q=80",
+                isMain: false,
+                sortOrder: 2,
+              },
+            ],
+          },
         },
       });
 
@@ -185,6 +201,17 @@ async function main() {
           },
         });
       }
+    }
+  }
+
+  const legacyVillas = await prisma.villa.findMany({
+    where: { imageUrl: { not: null }, images: { none: {} } },
+  });
+  for (const v of legacyVillas) {
+    if (v.imageUrl) {
+      await prisma.villaImage.create({
+        data: { villaId: v.id, url: v.imageUrl, isMain: true, sortOrder: 0 },
+      });
     }
   }
 

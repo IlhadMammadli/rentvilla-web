@@ -3,20 +3,34 @@ import type { PricePeriod } from "@prisma/client";
 import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 
+const villaInclude = {
+  city: true,
+  images: { orderBy: { sortOrder: "asc" as const } },
+  facilities: { include: { facility: true } },
+  user: {
+    include: {
+      villaOwnerProfile: true,
+      realtorProfile: true,
+    },
+  },
+};
+
 export async function getPublishedVillas() {
   return prisma.villa.findMany({
     where: { isPublished: true },
+    include: villaInclude,
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function getVillaById(id: string) {
+  return prisma.villa.findUnique({
+    where: { id, isPublished: true },
     include: {
       city: true,
+      images: { orderBy: { sortOrder: "asc" } },
       facilities: { include: { facility: true } },
-      user: {
-        include: {
-          villaOwnerProfile: true,
-          realtorProfile: true,
-        },
-      },
     },
-    orderBy: { createdAt: "desc" },
   });
 }
 

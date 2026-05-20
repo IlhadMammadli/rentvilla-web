@@ -92,11 +92,25 @@ model Villa {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  city       City            @relation(fields: [cityId], references: [id])
-  facilities VillaFacility[]
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  city            City                 @relation(fields: [cityId], references: [id])
+  facilities      VillaFacility[]
+  images          VillaImage[]
   views           VillaView[]
   contactReveals  VillaContactReveal[]
+}
+
+model VillaImage {
+  id        String   @id @default(cuid())
+  villaId   String
+  url       String
+  isMain    Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  villa Villa @relation(fields: [villaId], references: [id], onDelete: Cascade)
+
+  @@index([villaId])
 }
 
 model VillaView {

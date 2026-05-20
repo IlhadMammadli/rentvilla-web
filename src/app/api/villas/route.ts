@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser, normalizePhone } from "@/lib/auth";
+import { saveVillaImage } from "@/lib/upload";
+import { MAX_GALLERY_IMAGES } from "@/lib/constants";
 import { PricePeriod, UserRole } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
@@ -27,7 +27,12 @@ export async function POST(request: NextRequest) {
     const description = String(formData.get("description") ?? "").trim();
     const address = String(formData.get("address") ?? "").trim();
     const facilityIds = formData.getAll("facilityIds") as string[];
-    const imageFile = formData.get("image") as File | null;
+
+    const mainImageFile = formData.get("mainImage") as File | null;
+    const galleryFiles = formData
+      .getAll("galleryImages")
+      .filter((f): f is File => f instanceof File && f.size > 0)
+      .slice(0, MAX_GALLERY_IMAGES);
 
     if (
       !title ||
@@ -44,17 +49,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let imageUrl: string | null = null;
-    if (imageFile && imageFile.size > 0) {
-      const bytes = await imageFile.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const ext = path.extname(imageFile.name) || ".jpg";
-      const filename = `villa-${Date.now()}${ext}`;
-      const uploadDir = path.join(process.cwd(), "public", "uploads", "villas");
-      await mkdir(uploadDir, { recursive: true });
-      await writeFile(path.join(uploadDir, filename), buffer);
-      imageUrl = `/uploads/villas/${filename}`;
+    if (!mainImageFile || mainImageFile.size === 0) {
+      return NextResponse.json(
+        { error: "Main photo is required" },
+        { status: 400 }
+      );
     }
+
+    const mainImageUrl = await saveVillaImage(mainImageFile);
+    const galleryUrls = await Promise.all(galleryFiles.map(saveVillaImage));
 
     const villa = await prisma.villa.create({
       data: {
@@ -69,9 +72,19 @@ export async function POST(request: NextRequest) {
         contactName,
         contactPhone,
         address: address || null,
-        imageUrl,
+        imageUrl: mainImageUrl,
         facilities: {
           create: facilityIds.map((facilityId) => ({ facilityId })),
+        },
+        images: {
+          create: [
+            { url: mainImageUrl, isMain: true, sortOrder: 0 },
+            ...galleryUrls.map((url, index) => ({
+              url,
+              isMain: false,
+              sortOrder: index + 1,
+            })),
+          ],
         },
       },
     });

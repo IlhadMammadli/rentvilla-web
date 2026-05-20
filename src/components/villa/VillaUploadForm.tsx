@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { useTranslations } from "@/i18n/client";
+import { MAX_GALLERY_IMAGES } from "@/lib/constants";
 
 type City = { id: string; name: string };
 type Facility = { id: string; name: string };
@@ -38,7 +39,8 @@ export function VillaUploadForm({
   const [description, setDescription] = useState("");
   const [address, setAddress] = useState("");
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
-  const [image, setImage] = useState<File | null>(null);
+  const [mainImage, setMainImage] = useState<File | null>(null);
+  const [galleryImages, setGalleryImages] = useState<File[]>([]);
 
   function toggleFacility(id: string) {
     setSelectedFacilities((prev) =>
@@ -46,10 +48,22 @@ export function VillaUploadForm({
     );
   }
 
+  function handleGalleryChange(files: FileList | null) {
+    if (!files) return;
+    const list = Array.from(files).slice(0, MAX_GALLERY_IMAGES);
+    setGalleryImages(list);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (!mainImage) {
+      setError(t("villa.mainPhotoHint"));
+      setLoading(false);
+      return;
+    }
 
     const formData = new FormData();
     formData.append("title", title);
@@ -62,8 +76,9 @@ export function VillaUploadForm({
     formData.append("contactPhone", contactPhone);
     formData.append("description", description);
     formData.append("address", address);
+    formData.append("mainImage", mainImage);
+    galleryImages.forEach((file) => formData.append("galleryImages", file));
     selectedFacilities.forEach((id) => formData.append("facilityIds", id));
-    if (image) formData.append("image", image);
 
     try {
       const res = await fetch("/api/villas", { method: "POST", body: formData });
@@ -214,16 +229,40 @@ export function VillaUploadForm({
         </div>
       )}
 
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">
-          {t("dashboard.photo")}
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImage(e.target.files?.[0] ?? null)}
-          className="w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm"
-        />
+      <div className="space-y-4 rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-gray-900">
+            {t("villa.mainPhoto")} <span className="text-red-500">*</span>
+          </label>
+          <p className="text-xs text-gray-500">{t("villa.mainPhotoHint")}</p>
+          <input
+            type="file"
+            accept="image/*"
+            required
+            onChange={(e) => setMainImage(e.target.files?.[0] ?? null)}
+            className="w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="block text-sm font-medium text-gray-900">
+            {t("villa.galleryPhotos")}{" "}
+            <span className="font-normal text-gray-400">({t("common.optional")})</span>
+          </label>
+          <p className="text-xs text-gray-500">{t("villa.galleryPhotosHint")}</p>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => handleGalleryChange(e.target.files)}
+            className="w-full text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-gray-100 file:px-4 file:py-2 file:text-sm"
+          />
+          {galleryImages.length > 0 && (
+            <p className="text-xs text-gray-600">
+              {t("villa.galleryCount", { count: galleryImages.length })}
+            </p>
+          )}
+        </div>
       </div>
 
       {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>}

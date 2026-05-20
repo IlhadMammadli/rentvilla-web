@@ -2,14 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { BedDouble, MapPin, Users } from "lucide-react";
 import { formatPrice } from "@/lib/villa";
+import { getMainImageUrl, type VillaWithImages } from "@/lib/images";
 import type { PricePeriod } from "@prisma/client";
 import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 
-export type VillaCardData = {
+export type VillaCardData = VillaWithImages & {
   id: string;
   title: string;
-  imageUrl: string | null;
   price: number;
   pricePeriod: PricePeriod;
   guestCount: number;
@@ -26,9 +26,7 @@ export function VillaCard({
   locale: Locale;
 }) {
   const m = getMessages(locale);
-  const imageSrc =
-    villa.imageUrl ??
-    "https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80";
+  const imageSrc = getMainImageUrl(villa);
 
   return (
     <Link href={`/villas/${villa.id}`} className="group block">

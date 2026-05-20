@@ -9,6 +9,12 @@ export const localeNames: Record<Locale, string> = {
   en: "English",
 };
 
+export const localeFlags: Record<Locale, string> = {
+  az: "🇦🇿",
+  ru: "🇷🇺",
+  en: "🇬🇧",
+};
+
 export const LOCALE_COOKIE = "rentvilla_locale";
 
 export function isValidLocale(value: string): value is Locale {
