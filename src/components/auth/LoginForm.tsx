@@ -6,10 +6,12 @@ import Link from "next/link";
 import { SegmentControl } from "@/components/ui/SegmentControl";
 import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { useTranslations } from "@/i18n/client";
 
 type LoginType = "email" | "phone";
 
 export function LoginForm() {
+  const t = useTranslations();
   const router = useRouter();
   const [loginType, setLoginType] = useState<LoginType>("email");
   const [email, setEmail] = useState("");
@@ -37,7 +39,7 @@ export function LoginForm() {
 
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Login failed");
+        setError(data.error ?? t("auth.loginFailed"));
         return;
       }
 
@@ -48,7 +50,7 @@ export function LoginForm() {
       }
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("common.errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -58,8 +60,8 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="space-y-6">
       <SegmentControl
         options={[
-          { value: "email", label: "Email" },
-          { value: "phone", label: "Phone" },
+          { value: "email", label: t("auth.loginTypeEmail") },
+          { value: "phone", label: t("auth.loginTypePhone") },
         ]}
         value={loginType}
         onChange={setLoginType}
@@ -67,7 +69,7 @@ export function LoginForm() {
 
       {loginType === "email" ? (
         <Input
-          label="Email"
+          label={t("auth.email")}
           name="email"
           type="email"
           value={email}
@@ -75,11 +77,11 @@ export function LoginForm() {
           required
         />
       ) : (
-        <PhoneInput label="Phone number" value={phone} onChange={setPhone} required />
+        <PhoneInput label={t("auth.phone")} value={phone} onChange={setPhone} required />
       )}
 
       <Input
-        label="Password"
+        label={t("auth.password")}
         name="password"
         type="password"
         value={password}
@@ -96,13 +98,13 @@ export function LoginForm() {
         disabled={loading}
         className="w-full rounded-xl bg-gray-900 py-3.5 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-60"
       >
-        {loading ? "Signing in…" : "Sign in"}
+        {loading ? t("auth.signingIn") : t("auth.signIn")}
       </button>
 
       <p className="text-center text-sm text-gray-500">
-        Don&apos;t have an account?{" "}
+        {t("auth.noAccount")}{" "}
         <Link href="/register" className="font-medium text-gray-900 hover:underline">
-          Register
+          {t("nav.register")}
         </Link>
       </p>
     </form>

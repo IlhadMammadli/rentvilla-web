@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { useTranslations } from "@/i18n/client";
 
 type City = { id: string; name: string };
 type Facility = { id: string; name: string };
@@ -21,6 +22,7 @@ export function VillaUploadForm({
   defaultContactName,
   defaultContactPhone,
 }: VillaUploadFormProps) {
+  const t = useTranslations();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -67,13 +69,13 @@ export function VillaUploadForm({
       const res = await fetch("/api/villas", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Failed to create villa");
+        setError(data.error ?? t("dashboard.publishFailed"));
         return;
       }
       router.push("/dashboard");
       router.refresh();
     } catch {
-      setError("Something went wrong.");
+      setError(t("common.errorGeneric"));
     } finally {
       setLoading(false);
     }
@@ -81,10 +83,17 @@ export function VillaUploadForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Input label="Villa name" value={title} onChange={(e) => setTitle(e.target.value)} required />
+      <Input
+        label={t("dashboard.villaName")}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        required
+      />
 
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">City</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t("dashboard.cityLabel")}
+        </label>
         <select
           value={cityId}
           onChange={(e) => setCityId(e.target.value)}
@@ -101,7 +110,7 @@ export function VillaUploadForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
-          label="Price"
+          label={t("dashboard.priceLabel")}
           type="number"
           min="1"
           value={price}
@@ -109,21 +118,23 @@ export function VillaUploadForm({
           required
         />
         <div className="space-y-1.5">
-          <label className="block text-sm font-medium text-gray-700">Price period</label>
+          <label className="block text-sm font-medium text-gray-700">
+            {t("dashboard.pricePeriod")}
+          </label>
           <select
             value={pricePeriod}
             onChange={(e) => setPricePeriod(e.target.value as "DAILY" | "MONTHLY")}
             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-gray-900"
           >
-            <option value="DAILY">Per day</option>
-            <option value="MONTHLY">Per month</option>
+            <option value="DAILY">{t("dashboard.perDay")}</option>
+            <option value="MONTHLY">{t("dashboard.perMonthOption")}</option>
           </select>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
-          label="Guest count"
+          label={t("dashboard.guestCount")}
           type="number"
           min="1"
           value={guestCount}
@@ -131,7 +142,7 @@ export function VillaUploadForm({
           required
         />
         <Input
-          label="Room count"
+          label={t("dashboard.roomCount")}
           type="number"
           min="1"
           value={roomCount}
@@ -140,37 +151,50 @@ export function VillaUploadForm({
         />
       </div>
 
-      <Input label="Contact name" value={contactName} onChange={(e) => setContactName(e.target.value)} required />
-      <PhoneInput label="Contact phone" value={contactPhone} onChange={setContactPhone} required />
+      <Input
+        label={t("dashboard.contactName")}
+        value={contactName}
+        onChange={(e) => setContactName(e.target.value)}
+        required
+      />
+      <PhoneInput
+        label={t("dashboard.contactPhone")}
+        value={contactPhone}
+        onChange={setContactPhone}
+        required
+      />
 
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">Address / location</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t("dashboard.address")}
+        </label>
         <input
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          placeholder="Street, district, or map pin description"
           className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-gray-900"
         />
-        <p className="text-xs text-gray-400">
-          Google Maps picker will be added in the next step. For now, enter the address manually.
-        </p>
+        <p className="text-xs text-gray-400">{t("dashboard.addressHint")}</p>
       </div>
 
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">Details</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t("dashboard.details")}
+        </label>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           required
           rows={5}
           className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-gray-900"
-          placeholder="Describe the villa, amenities, rules, etc."
+          placeholder={t("dashboard.detailsPlaceholder")}
         />
       </div>
 
       {facilities.length > 0 && (
         <div>
-          <p className="mb-3 text-sm font-medium text-gray-700">Facilities</p>
+          <p className="mb-3 text-sm font-medium text-gray-700">
+            {t("dashboard.facilitiesLabel")}
+          </p>
           <div className="flex flex-wrap gap-2">
             {facilities.map((f) => (
               <button
@@ -191,7 +215,9 @@ export function VillaUploadForm({
       )}
 
       <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">Photo</label>
+        <label className="block text-sm font-medium text-gray-700">
+          {t("dashboard.photo")}
+        </label>
         <input
           type="file"
           accept="image/*"
@@ -207,7 +233,7 @@ export function VillaUploadForm({
         disabled={loading}
         className="w-full rounded-xl bg-gray-900 py-3.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-60"
       >
-        {loading ? "Publishing…" : "Publish villa"}
+        {loading ? t("dashboard.publishing") : t("dashboard.publish")}
       </button>
     </form>
   );

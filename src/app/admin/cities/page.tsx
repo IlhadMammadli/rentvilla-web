@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { AdminListManager } from "@/components/admin/AdminListManager";
+import { getTranslations } from "@/i18n/server";
 
 export default async function AdminCitiesPage() {
+  const { t } = await getTranslations();
   const cities = await prisma.city.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
@@ -12,8 +14,8 @@ export default async function AdminCitiesPage() {
     <AdminListManager
       items={cities}
       apiPath="/api/admin/cities"
-      title="Cities"
-      placeholder="New city name…"
+      title={t("admin.cities")}
+      placeholder={`${t("admin.cities")}…`}
     />
   );
 }

@@ -2,13 +2,21 @@
 
 Villa rental platform for Azerbaijan — public listings, owner/realtor registration, villa uploads, and admin panel.
 
+## Branch `feature/language`
+
+- **Languages:** Azerbaijani (default), Russian, English — header dropdown
+- **Contact tracking:** Phone shown only after "Show contact number" click
+- **Owner dashboard:** Views, contact reveals, conversion %, top listings, 7-day stats
+
+Run after pull: `npx prisma db push`
+
 ## What’s included (Step 1)
 
 - **Registration** — Villa owner (name, surname, email, +994 phone, password) or Realtor (company, optional logo, phone, email, password)
 - **Login** — Email or phone (segment switch) + password
 - **Main page** — Grid of villa cards matching the design (image, price badge, title, city, guests, bedrooms)
-- **Villa detail** — Shows contact **name** and **phone** for renters
-- **Dashboard** — Logged-in owners/realtors can add villas (city, price daily/monthly, guests, rooms, facilities, contact, details)
+- **Villa detail** — Contact name visible; phone revealed on button click (tracked)
+- **Dashboard** — Owner analytics + add villas (city, price, guests, rooms, facilities, contact, details)
 - **Admin panel** — Full access for `ilhadmammadli@gmail.com`
 - **Database** — SQLite via Prisma (easy local setup + visual browser)
 

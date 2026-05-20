@@ -95,6 +95,32 @@ model Villa {
   user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   city       City            @relation(fields: [cityId], references: [id])
   facilities VillaFacility[]
+  views           VillaView[]
+  contactReveals  VillaContactReveal[]
+}
+
+model VillaView {
+  id        String   @id @default(cuid())
+  villaId   String
+  visitorId String?
+  createdAt DateTime @default(now())
+
+  villa Villa @relation(fields: [villaId], references: [id], onDelete: Cascade)
+
+  @@index([villaId])
+  @@index([villaId, createdAt])
+}
+
+model VillaContactReveal {
+  id        String   @id @default(cuid())
+  villaId   String
+  visitorId String?
+  createdAt DateTime @default(now())
+
+  villa Villa @relation(fields: [villaId], references: [id], onDelete: Cascade)
+
+  @@index([villaId])
+  @@index([villaId, createdAt])
 }
 
 model VillaFacility {

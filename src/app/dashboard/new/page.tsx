@@ -3,9 +3,11 @@ import { requireOwnerOrRealtor } from "@/lib/admin";
 import { getActiveCities, getActiveFacilities } from "@/lib/villa";
 import { prisma } from "@/lib/prisma";
 import { VillaUploadForm } from "@/components/villa/VillaUploadForm";
+import { getTranslations } from "@/i18n/server";
 
 export default async function NewVillaPage() {
   const user = await requireOwnerOrRealtor();
+  const { t } = await getTranslations();
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
@@ -31,12 +33,12 @@ export default async function NewVillaPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-10 sm:px-6">
       <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900">
-        ← Back
+        ← {t("common.back")}
       </Link>
-      <h1 className="mt-4 text-2xl font-semibold text-gray-900">Add new villa</h1>
-      <p className="mt-1 text-sm text-gray-500">
-        Fill in the details below. Your contact info is pre-filled from registration.
-      </p>
+      <h1 className="mt-4 text-2xl font-semibold text-gray-900">
+        {t("dashboard.newVillaTitle")}
+      </h1>
+      <p className="mt-1 text-sm text-gray-500">{t("dashboard.newVillaSubtitle")}</p>
 
       <div className="mt-8 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
         <VillaUploadForm

@@ -1,5 +1,7 @@
 import { prisma } from "./prisma";
 import type { PricePeriod } from "@prisma/client";
+import type { Locale } from "@/i18n/config";
+import { getMessages } from "@/i18n/messages";
 
 export async function getPublishedVillas() {
   return prisma.villa.findMany({
@@ -18,8 +20,14 @@ export async function getPublishedVillas() {
   });
 }
 
-export function formatPrice(price: number, period: PricePeriod) {
-  const suffix = period === "MONTHLY" ? "/month" : "/night";
+export function formatPrice(
+  price: number,
+  period: PricePeriod,
+  locale: Locale = "en"
+) {
+  const messages = getMessages(locale);
+  const suffix =
+    period === "MONTHLY" ? messages.villa.perMonth : messages.villa.perNight;
   return `$${price.toLocaleString()}${suffix}`;
 }
 

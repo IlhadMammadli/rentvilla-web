@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "@/i18n/client";
 
 type Item = { id: string; name: string; isActive?: boolean };
 
@@ -16,8 +17,9 @@ export function AdminListManager({
   items: initialItems,
   apiPath,
   title,
-  placeholder = "Add new…",
+  placeholder,
 }: AdminListManagerProps) {
+  const t = useTranslations();
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [name, setName] = useState("");
@@ -38,7 +40,7 @@ export function AdminListManager({
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error ?? "Failed to add");
+      setError(data.error ?? t("common.errorGeneric"));
       setLoading(false);
       return;
     }
@@ -51,7 +53,7 @@ export function AdminListManager({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Remove this item?")) return;
+    if (!confirm(t("common.remove") + "?")) return;
     const res = await fetch(`${apiPath}/${id}`, { method: "DELETE" });
     if (res.ok) {
       setItems((prev) => prev.filter((i) => i.id !== id));
@@ -75,7 +77,7 @@ export function AdminListManager({
           disabled={loading}
           className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-60"
         >
-          Add
+          {t("common.add")}
         </button>
       </form>
 
@@ -93,7 +95,7 @@ export function AdminListManager({
               onClick={() => handleDelete(item.id)}
               className="text-red-500 hover:text-red-700"
             >
-              Remove
+              {t("common.remove")}
             </button>
           </li>
         ))}
