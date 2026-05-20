@@ -1,0 +1,7 @@
+[build]
+  command = "npx prisma generate && npx prisma db push && npm run build"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Next.js is handled by Netlify's OpenNext integration automatically.

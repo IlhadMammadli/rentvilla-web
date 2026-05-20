@@ -18,7 +18,15 @@ Run after pull: `npx prisma db push`
 - **Villa detail** — Contact name visible; phone revealed on button click (tracked)
 - **Dashboard** — Owner analytics + add villas (city, price, guests, rooms, facilities, contact, details)
 - **Admin panel** — Full access for `ilhadmammadli@gmail.com`
-- **Database** — SQLite via Prisma (easy local setup + visual browser)
+- **Database** — PostgreSQL via Prisma (Neon recommended; see [docs/NETLIFY.md](docs/NETLIFY.md) for Netlify)
+
+## Deploy on Netlify
+
+1. Create a free database at [Neon](https://neon.tech)
+2. In Netlify → **Environment variables**, set `DATABASE_URL` and `SESSION_SECRET`
+3. Redeploy
+
+Full steps: **[docs/NETLIFY.md](docs/NETLIFY.md)**
 
 ## Requirements
 
@@ -54,7 +62,7 @@ Owners/Realtors: register at `/register` → `/dashboard` → **Add villa**
 
 ## Where is the database?
 
-- **File:** `prisma/dev.db` (SQLite)
+- **Connection:** `DATABASE_URL` in `.env` (PostgreSQL)
 - **Schema:** `prisma/schema.prisma`
 
 ### View & edit data visually (recommended)
@@ -63,7 +71,7 @@ Owners/Realtors: register at `/register` → `/dashboard` → **Add villa**
 npm run db:studio
 ```
 
-Opens **Prisma Studio** at http://localhost:5555 — browse Users, Villas, Cities, Facilities, etc.
+Opens **Prisma Studio** at http://localhost:5555 — browse Users, Villas, Cities, Facilities, etc. (requires `DATABASE_URL` in `.env`)
 
 ### Admin panel (in the app)
 
