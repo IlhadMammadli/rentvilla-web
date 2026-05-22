@@ -43,7 +43,7 @@ export function LoginForm() {
         return;
       }
 
-      if (data.role === "ADMIN") {
+      if (data.role === "ADMIN" || data.role === "SITE_MANAGER") {
         router.push("/admin");
       } else {
         router.push("/dashboard");

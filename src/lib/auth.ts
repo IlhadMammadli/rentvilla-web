@@ -67,7 +67,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       },
     });
 
-    if (!user) return null;
+    if (!user || user.isBlocked) return null;
 
     let displayName = "User";
     if (user.villaOwnerProfile) {

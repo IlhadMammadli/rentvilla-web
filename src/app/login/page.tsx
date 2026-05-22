@@ -9,7 +9,9 @@ export default async function LoginPage() {
   const { t } = await getTranslations();
 
   if (user) {
-    redirect(user.role === "ADMIN" ? "/admin" : "/dashboard");
+    redirect(
+      user.role === "ADMIN" || user.role === "SITE_MANAGER" ? "/admin" : "/dashboard"
+    );
   }
 
   return (

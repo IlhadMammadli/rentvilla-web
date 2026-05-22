@@ -15,6 +15,7 @@ export type VillaCardData = VillaWithImages & {
   guestCount: number;
   roomCount: number;
   isPreview: boolean;
+  isPromoted?: boolean;
   city: { name: string };
 };
 
@@ -40,9 +41,9 @@ export function VillaCard({
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
 
-          {villa.isPreview && (
+          {(villa.isPromoted || villa.isPreview) && (
             <span className="absolute left-3 top-3 rounded-md bg-gray-900/75 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
-              {m.common.preview}
+              {villa.isPromoted ? m.villa.promoted : m.common.preview}
             </span>
           )}
 

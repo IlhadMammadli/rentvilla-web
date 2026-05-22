@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (user.isBlocked) {
+      return NextResponse.json(
+        { error: "Your account has been blocked. Contact support." },
+        { status: 403 }
+      );
+    }
+
     await createSession(user.id);
     return NextResponse.json({ success: true, role: user.role });
   } catch (error) {

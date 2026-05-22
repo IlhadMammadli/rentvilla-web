@@ -1,8 +1,13 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getTranslations } from "@/i18n/server";
+import { requireStaff } from "@/lib/admin";
+import { isAdmin } from "@/lib/permissions";
 
 export default async function AdminOverviewPage() {
+  const user = await requireStaff();
   const { t } = await getTranslations();
+  const adminUser = isAdmin(user.role);
 
   const [users, villas, cities, facilities] = await Promise.all([
     prisma.user.count(),
@@ -35,10 +40,33 @@ export default async function AdminOverviewPage() {
         ))}
       </div>
 
-      <div className="mt-10 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
-        <p className="font-medium">{t("admin.dbBrowser")}</p>
-        <p className="mt-1 text-blue-800">{t("admin.dbBrowserHint")}</p>
+      <div className="mt-8 flex flex-wrap gap-3">
+        <Link
+          href="/admin/analytics"
+          className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
+        >
+          {t("admin.viewAnalytics")}
+        </Link>
+        <Link
+          href="/admin/users"
+          className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
+        >
+          {t("admin.manageUsers")}
+        </Link>
+        <Link
+          href="/admin/villas"
+          className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
+        >
+          {t("admin.manageVillas")}
+        </Link>
       </div>
+
+      {adminUser && (
+        <div className="mt-10 rounded-xl border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
+          <p className="font-medium">{t("admin.dbBrowser")}</p>
+          <p className="mt-1 text-blue-800">{t("admin.dbBrowserHint")}</p>
+        </div>
+      )}
     </div>
   );
 }

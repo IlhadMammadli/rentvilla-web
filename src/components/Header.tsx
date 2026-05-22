@@ -31,12 +31,12 @@ export function Header({ user }: HeaderProps) {
 
           {user ? (
             <>
-              {user.role === "ADMIN" && (
+              {(user.role === "ADMIN" || user.role === "SITE_MANAGER") && (
                 <Link
                   href="/admin"
                   className="text-sm text-gray-600 hover:text-gray-900"
                 >
-                  {t("nav.admin")}
+                  {user.role === "ADMIN" ? t("nav.admin") : t("nav.siteManager")}
                 </Link>
               )}
               {(user.role === "VILLA_OWNER" || user.role === "REALTOR") && (

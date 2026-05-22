@@ -17,9 +17,12 @@ const villaInclude = {
 
 export async function getPublishedVillas() {
   return prisma.villa.findMany({
-    where: { isPublished: true },
+    where: {
+      isPublished: true,
+      user: { isBlocked: false },
+    },
     include: villaInclude,
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
   });
 }
 
