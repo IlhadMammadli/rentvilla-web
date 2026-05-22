@@ -74,6 +74,26 @@ npm run dev
 
 → Run `npm run db:setup` against production `DATABASE_URL` (tables or seed missing).
 
-### Uploads (images) disappear after redeploy
+### Villas missing after switching to PostgreSQL
 
-Netlify’s filesystem is ephemeral. For production, use **Netlify Blobs**, **Cloudinary**, or **S3** (future improvement). Uploaded files in `/public/uploads` may not persist across deploys.
+Your old villas were in **SQLite** (`prisma/dev.db`). The live site uses **Neon**. Migrate once:
+
+```bash
+npm run db:migrate-from-sqlite
+```
+
+### Image uploads on Netlify (required for new villas)
+
+Netlify cannot save files to disk. Set up free [Cloudinary](https://cloudinary.com):
+
+1. Create account → **Settings** → **Upload** → add **Upload preset** (unsigned)
+2. Add to Netlify environment variables:
+
+| Variable | Example |
+|----------|---------|
+| `CLOUDINARY_CLOUD_NAME` | `your-cloud-name` |
+| `CLOUDINARY_UPLOAD_PRESET` | `rentvilla_unsigned` |
+
+Redeploy. New villa uploads will use Cloudinary URLs that work everywhere.
+
+Migrated villas with `/uploads/villas/...` paths work on **localhost** only until you re-upload photos or use Cloudinary.
