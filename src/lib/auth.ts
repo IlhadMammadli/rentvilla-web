@@ -64,6 +64,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       include: {
         villaOwnerProfile: true,
         realtorProfile: true,
+        guestProfile: true,
       },
     });
 
@@ -74,6 +75,8 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       displayName = `${user.villaOwnerProfile.firstName} ${user.villaOwnerProfile.lastName}`;
     } else if (user.realtorProfile) {
       displayName = user.realtorProfile.companyName;
+    } else if (user.guestProfile) {
+      displayName = `${user.guestProfile.firstName} ${user.guestProfile.lastName}`;
     } else if (user.email) {
       displayName = user.email.split("@")[0];
     }
@@ -82,7 +85,12 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       id: user.id,
       role: user.role,
       email: user.email,
-      phone: user.phone ?? user.villaOwnerProfile?.phone ?? user.realtorProfile?.phone ?? null,
+      phone:
+        user.phone ??
+        user.villaOwnerProfile?.phone ??
+        user.realtorProfile?.phone ??
+        user.guestProfile?.phone ??
+        null,
       displayName,
     };
   } catch {

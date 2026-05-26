@@ -1,17 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { SegmentControl } from "@/components/ui/SegmentControl";
 import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { useTranslations } from "@/i18n/client";
+import { defaultPathForRole } from "@/lib/favorites";
+import type { UserRole } from "@prisma/client";
 
 type CustomerType = "villa_owner" | "realtor";
 
 export function RegisterForm() {
   const t = useTranslations();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
+
   const [customerType, setCustomerType] = useState<CustomerType>("villa_owner");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -24,6 +29,15 @@ export function RegisterForm() {
 
   const [companyName, setCompanyName] = useState("");
   const [companyLogo, setCompanyLogo] = useState<File | null>(null);
+
+  function afterRegister(role: UserRole) {
+    if (redirectTo) {
+      router.push(redirectTo);
+    } else {
+      router.push(defaultPathForRole(role));
+    }
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -59,8 +73,7 @@ export function RegisterForm() {
         return;
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      afterRegister(data.role);
     } catch {
       setError(t("common.errorGeneric"));
     } finally {
@@ -78,8 +91,11 @@ export function RegisterForm() {
             { value: "realtor", label: t("auth.realtor") },
           ]}
           value={customerType}
-          onChange={setCustomerType}
+          onChange={(v) => setCustomerType(v as CustomerType)}
         />
+        {customerType === "villa_owner" && (
+          <p className="mt-2 text-xs text-gray-500">{t("auth.villaOwnerHint")}</p>
+        )}
       </div>
 
       {customerType === "villa_owner" ? (

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "./auth";
 import { canAccessAdminPanel } from "./permissions";
+import { canListVillas } from "./roles";
 import type { UserRole } from "@prisma/client";
 
 export async function requireStaff() {
@@ -18,7 +19,7 @@ export async function requireAdmin() {
 
 export async function requireOwnerOrRealtor() {
   const user = await getSessionUser();
-  if (!user || (user.role !== "VILLA_OWNER" && user.role !== "REALTOR")) {
+  if (!user || !canListVillas(user.role)) {
     redirect("/login");
   }
   return user;

@@ -32,6 +32,10 @@ export function canPromoteVilla(role: UserRole) {
   return isAdmin(role);
 }
 
+export function canPromoteRealtor(role: UserRole) {
+  return isAdmin(role);
+}
+
 export function canToggleVillaPublish(role: UserRole) {
   return isStaff(role);
 }

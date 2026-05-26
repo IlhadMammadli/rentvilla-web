@@ -11,6 +11,51 @@ import { UserRole } from "@prisma/client";
 
 const DEFAULT_LOGO = "/logo-default.svg";
 
+async function registerPerson(
+  formData: FormData,
+  passwordHash: string,
+  role: UserRole,
+  profileKey: "villaOwnerProfile" | "guestProfile"
+) {
+  const firstName = String(formData.get("firstName") ?? "").trim();
+  const lastName = String(formData.get("lastName") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const phone = normalizePhone(String(formData.get("phone") ?? ""));
+
+  if (!firstName || !lastName || !email || phone.length < 12) {
+    return NextResponse.json(
+      { error: "Please fill all required fields" },
+      { status: 400 }
+    );
+  }
+
+  const existing = await prisma.user.findFirst({
+    where: { OR: [{ email }, { phone }] },
+  });
+  if (existing) {
+    return NextResponse.json(
+      { error: "Email or phone already registered" },
+      { status: 400 }
+    );
+  }
+
+  const profileData = { firstName, lastName, phone };
+  const user = await prisma.user.create({
+    data: {
+      email,
+      phone,
+      passwordHash,
+      role,
+      ...(profileKey === "villaOwnerProfile"
+        ? { villaOwnerProfile: { create: profileData } }
+        : { guestProfile: { create: profileData } }),
+    },
+  });
+
+  await createSession(user.id);
+  return NextResponse.json({ success: true, role: user.role });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
@@ -27,42 +72,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await hashPassword(password);
 
     if (customerType === "villa_owner") {
-      const firstName = String(formData.get("firstName") ?? "").trim();
-      const lastName = String(formData.get("lastName") ?? "").trim();
-      const email = String(formData.get("email") ?? "").trim().toLowerCase();
-      const phone = normalizePhone(String(formData.get("phone") ?? ""));
-
-      if (!firstName || !lastName || !email || phone.length < 12) {
-        return NextResponse.json(
-          { error: "Please fill all required fields" },
-          { status: 400 }
-        );
-      }
-
-      const existing = await prisma.user.findFirst({
-        where: { OR: [{ email }, { phone }] },
-      });
-      if (existing) {
-        return NextResponse.json(
-          { error: "Email or phone already registered" },
-          { status: 400 }
-        );
-      }
-
-      const user = await prisma.user.create({
-        data: {
-          email,
-          phone,
-          passwordHash,
-          role: UserRole.VILLA_OWNER,
-          villaOwnerProfile: {
-            create: { firstName, lastName, phone },
-          },
-        },
-      });
-
-      await createSession(user.id);
-      return NextResponse.json({ success: true, role: user.role });
+      return registerPerson(formData, passwordHash, UserRole.VILLA_OWNER, "villaOwnerProfile");
     }
 
     if (customerType === "realtor") {

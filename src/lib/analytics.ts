@@ -27,6 +27,7 @@ export async function getOwnerDashboardStats(userId: string) {
         select: {
           views: true,
           contactReveals: true,
+          favorites: true,
         },
       },
     },
@@ -51,6 +52,7 @@ export async function getOwnerDashboardStats(userId: string) {
 
   const totalViews = villas.reduce((s, v) => s + v._count.views, 0);
   const totalContacts = villas.reduce((s, v) => s + v._count.contactReveals, 0);
+  const totalFavorites = villas.reduce((s, v) => s + v._count.favorites, 0);
   const contactRate =
     totalViews > 0 ? Math.round((totalContacts / totalViews) * 100) : 0;
 
@@ -63,6 +65,7 @@ export async function getOwnerDashboardStats(userId: string) {
     isPublished: v.isPublished,
     views: v._count.views,
     contacts: v._count.contactReveals,
+    favorites: v._count.favorites,
     conversion:
       v._count.views > 0
         ? Math.round((v._count.contactReveals / v._count.views) * 100)
@@ -72,6 +75,8 @@ export async function getOwnerDashboardStats(userId: string) {
   const mostViewed = [...villasWithStats].sort((a, b) => b.views - a.views)[0] ?? null;
   const mostContacted =
     [...villasWithStats].sort((a, b) => b.contacts - a.contacts)[0] ?? null;
+  const mostFavorited =
+    [...villasWithStats].sort((a, b) => b.favorites - a.favorites)[0] ?? null;
 
   const topPerformer =
     [...villasWithStats].sort(
@@ -82,11 +87,13 @@ export async function getOwnerDashboardStats(userId: string) {
     totalListings: villas.length,
     totalViews,
     totalContacts,
+    totalFavorites,
     contactRate,
     viewsLast7,
     contactsLast7,
     mostViewed,
     mostContacted,
+    mostFavorited,
     topPerformer,
     villas: villasWithStats,
   };

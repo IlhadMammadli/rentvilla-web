@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { defaultPathForRole } from "@/lib/favorites";
 import { getTranslations } from "@/i18n/server";
 
 export default async function LoginPage() {
@@ -9,9 +11,7 @@ export default async function LoginPage() {
   const { t } = await getTranslations();
 
   if (user) {
-    redirect(
-      user.role === "ADMIN" || user.role === "SITE_MANAGER" ? "/admin" : "/dashboard"
-    );
+    redirect(defaultPathForRole(user.role));
   }
 
   return (
@@ -22,7 +22,9 @@ export default async function LoginPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-        <LoginForm />
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
       </div>
 
       <p className="mt-6 text-center text-sm text-gray-500">

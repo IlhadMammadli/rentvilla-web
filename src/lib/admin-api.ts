@@ -5,6 +5,7 @@ import {
   canDeleteUser,
   canDeleteVilla,
   canPromoteVilla,
+  canPromoteRealtor,
   canToggleVillaPublish,
   isAdmin,
   isStaff,
@@ -47,5 +48,6 @@ export {
   canDeleteUser,
   canDeleteVilla,
   canPromoteVilla,
+  canPromoteRealtor,
   canToggleVillaPublish,
 };

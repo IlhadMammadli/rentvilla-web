@@ -3,9 +3,12 @@ import { requireOwnerOrRealtor } from "@/lib/admin";
 import { getOwnerDashboardStats } from "@/lib/analytics";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { OwnerDashboard } from "@/components/dashboard/OwnerDashboard";
+import { PromotionBanner } from "@/components/dashboard/PromotionBanner";
+import { UserRole } from "@prisma/client";
 
 export default async function DashboardPage() {
   const user = await requireOwnerOrRealtor();
+  const isRealtor = user.role === UserRole.REALTOR;
   const stats = await getOwnerDashboardStats(user.id);
   const { t } = await getTranslations();
   const locale = await getLocale();
@@ -24,6 +27,8 @@ export default async function DashboardPage() {
           {t("dashboard.addVilla")}
         </Link>
       </div>
+
+      {isRealtor && <PromotionBanner />}
 
       <OwnerDashboard stats={stats} locale={locale} />
     </div>

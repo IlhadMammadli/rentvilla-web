@@ -7,6 +7,7 @@ import {
   canBlockUser,
   canDeleteUser,
   canAssignSiteManager,
+  canPromoteRealtor,
 } from "@/lib/admin-api";
 import { UserRole } from "@prisma/client";
 
@@ -33,6 +34,19 @@ export async function PATCH(
     await prisma.user.update({
       where: { id },
       data: { isBlocked: Boolean(body.isBlocked) },
+    });
+  }
+
+  if (body.promoteCompany !== undefined) {
+    if (!canPromoteRealtor(actor.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    if (target.role !== "REALTOR") {
+      return NextResponse.json({ error: "User is not a realtor" }, { status: 400 });
+    }
+    await prisma.realtorProfile.update({
+      where: { userId: id },
+      data: { isPromoted: Boolean(body.promoteCompany) },
     });
   }
 

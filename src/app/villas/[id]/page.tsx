@@ -2,11 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, BedDouble, Users } from "lucide-react";
 import { getVillaById, formatPrice } from "@/lib/villa";
+import { formatPostNumber } from "@/lib/post-number";
 import { getGalleryImageUrls } from "@/lib/images";
+import { getSessionUser } from "@/lib/auth";
+import { isVillaFavorited } from "@/lib/favorites";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { VillaViewTracker } from "@/components/villa/VillaViewTracker";
 import { ContactRevealPanel } from "@/components/villa/ContactRevealPanel";
 import { VillaImageCarousel } from "@/components/villa/VillaImageCarousel";
+import { FavoriteButton } from "@/components/villa/FavoriteButton";
 
 export default async function VillaDetailPage({
   params,
@@ -19,6 +23,9 @@ export default async function VillaDetailPage({
 
   const villa = await getVillaById(id);
   if (!villa) notFound();
+
+  const user = await getSessionUser();
+  const favorited = user ? await isVillaFavorited(user.id, villa.id) : false;
 
   const images = getGalleryImageUrls(villa);
 
@@ -42,10 +49,31 @@ export default async function VillaDetailPage({
 
       <div className="grid gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <h1 className="text-3xl font-semibold text-gray-900">{villa.title}</h1>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <h1 className="text-3xl font-semibold text-gray-900">{villa.title}</h1>
+            <FavoriteButton
+              villaId={villa.id}
+              initialFavorited={favorited}
+              isLoggedIn={Boolean(user)}
+            />
+          </div>
+          {villa.isAFrame && (
+            <span className="mt-2 inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-900">
+              {t("villa.aframe")}
+            </span>
+          )}
+          <p className="mt-2 text-sm text-gray-500">
+            {t("villa.postNumber")}:{" "}
+            <span className="font-mono font-medium text-gray-700">
+              &quot;{formatPostNumber(villa.postNumber)}&quot;
+            </span>
+          </p>
           <p className="mt-2 flex items-center gap-2 text-gray-500">
             <MapPin className="h-4 w-4" />
-            {villa.city.name}, {t("common.country")}
+            {villa.district
+              ? `${villa.district.name}, ${villa.city.name}`
+              : villa.city.name}
+            , {t("common.country")}
             {villa.address && ` · ${villa.address}`}
           </p>
 

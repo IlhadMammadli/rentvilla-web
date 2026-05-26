@@ -1,23 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUser, normalizePhone } from "@/lib/auth";
+import { ensureVillaOwnerProfile } from "@/lib/ensure-owner-profile";
+import { canListVillas } from "@/lib/roles";
 import { saveVillaImage } from "@/lib/upload";
 import { MAX_GALLERY_IMAGES } from "@/lib/constants";
-import { PricePeriod, UserRole } from "@prisma/client";
+import { PricePeriod } from "@prisma/client";
 
 export async function POST(request: NextRequest) {
   const session = await getSessionUser();
-  if (
-    !session ||
-    (session.role !== UserRole.VILLA_OWNER && session.role !== UserRole.REALTOR)
-  ) {
+  if (!session || !canListVillas(session.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (session.role === "GUEST") {
+    await ensureVillaOwnerProfile(session.id);
   }
 
   try {
     const formData = await request.formData();
     const title = String(formData.get("title") ?? "").trim();
     const cityId = String(formData.get("cityId") ?? "");
+    const districtId = String(formData.get("districtId") ?? "").trim() || null;
     const price = parseFloat(String(formData.get("price") ?? "0"));
     const pricePeriod = String(formData.get("pricePeriod") ?? "DAILY") as PricePeriod;
     const guestCount = parseInt(String(formData.get("guestCount") ?? "0"), 10);
@@ -26,6 +30,7 @@ export async function POST(request: NextRequest) {
     const contactPhone = normalizePhone(String(formData.get("contactPhone") ?? ""));
     const description = String(formData.get("description") ?? "").trim();
     const address = String(formData.get("address") ?? "").trim();
+    const isAFrame = formData.get("isAFrame") === "true";
     const facilityIds = formData.getAll("facilityIds") as string[];
 
     const mainImageFile = formData.get("mainImage") as File | null;
@@ -56,6 +61,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (districtId) {
+      const district = await prisma.cityDistrict.findFirst({
+        where: { id: districtId, cityId, isActive: true },
+      });
+      if (!district) {
+        return NextResponse.json({ error: "Invalid district" }, { status: 400 });
+      }
+    }
+
     const mainImageUrl = await saveVillaImage(mainImageFile);
     const galleryUrls = await Promise.all(galleryFiles.map(saveVillaImage));
 
@@ -63,6 +77,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.id,
         cityId,
+        districtId,
         title,
         description,
         price,
@@ -72,6 +87,7 @@ export async function POST(request: NextRequest) {
         contactName,
         contactPhone,
         address: address || null,
+        isAFrame,
         imageUrl: mainImageUrl,
         facilities: {
           create: facilityIds.map((facilityId) => ({ facilityId })),

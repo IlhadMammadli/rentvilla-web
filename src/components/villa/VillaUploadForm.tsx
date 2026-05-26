@@ -4,14 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
+import { FilterCombobox } from "@/components/ui/FilterCombobox";
 import { useTranslations } from "@/i18n/client";
 import { MAX_GALLERY_IMAGES } from "@/lib/constants";
+import type { CityWithDistricts } from "@/components/home/VillaSearchForm";
 
-type City = { id: string; name: string };
 type Facility = { id: string; name: string };
 
 type VillaUploadFormProps = {
-  cities: City[];
+  cities: CityWithDistricts[];
   facilities: Facility[];
   defaultContactName: string;
   defaultContactPhone: string;
@@ -30,6 +31,10 @@ export function VillaUploadForm({
 
   const [title, setTitle] = useState("");
   const [cityId, setCityId] = useState(cities[0]?.id ?? "");
+  const [districtId, setDistrictId] = useState("");
+
+  const selectedCity = cities.find((c) => c.id === cityId);
+  const districtOptions = selectedCity?.districts ?? [];
   const [price, setPrice] = useState("");
   const [pricePeriod, setPricePeriod] = useState<"DAILY" | "MONTHLY">("DAILY");
   const [guestCount, setGuestCount] = useState("");
@@ -41,6 +46,7 @@ export function VillaUploadForm({
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [mainImage, setMainImage] = useState<File | null>(null);
   const [galleryImages, setGalleryImages] = useState<File[]>([]);
+  const [isAFrame, setIsAFrame] = useState(false);
 
   function toggleFacility(id: string) {
     setSelectedFacilities((prev) =>
@@ -68,6 +74,7 @@ export function VillaUploadForm({
     const formData = new FormData();
     formData.append("title", title);
     formData.append("cityId", cityId);
+    if (districtId) formData.append("districtId", districtId);
     formData.append("price", price);
     formData.append("pricePeriod", pricePeriod);
     formData.append("guestCount", guestCount);
@@ -76,6 +83,7 @@ export function VillaUploadForm({
     formData.append("contactPhone", contactPhone);
     formData.append("description", description);
     formData.append("address", address);
+    formData.append("isAFrame", isAFrame ? "true" : "false");
     formData.append("mainImage", mainImage);
     galleryImages.forEach((file) => formData.append("galleryImages", file));
     selectedFacilities.forEach((id) => formData.append("facilityIds", id));
@@ -105,22 +113,33 @@ export function VillaUploadForm({
         required
       />
 
-      <div className="space-y-1.5">
-        <label className="block text-sm font-medium text-gray-700">
-          {t("dashboard.cityLabel")}
-        </label>
-        <select
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FilterCombobox
+          label={t("dashboard.cityLabel")}
+          placeholder={t("home.searchCityPlaceholder")}
+          searchPlaceholder={t("home.searchTypeToFilter")}
+          options={cities.map((c) => ({ value: c.id, label: c.name }))}
           value={cityId}
-          onChange={(e) => setCityId(e.target.value)}
-          required
-          className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
-        >
-          {cities.map((city) => (
-            <option key={city.id} value={city.id}>
-              {city.name}
-            </option>
-          ))}
-        </select>
+          onChange={(id) => {
+            setCityId(id);
+            setDistrictId("");
+          }}
+          emptyMessage={t("home.searchNoResults")}
+        />
+        {districtOptions.length > 0 && (
+          <FilterCombobox
+            label={t("dashboard.districtLabel")}
+            placeholder={t("home.searchDistrictPlaceholder")}
+            searchPlaceholder={t("home.searchTypeToFilter")}
+            options={[
+              { value: "", label: t("home.searchAllDistricts") },
+              ...districtOptions.map((d) => ({ value: d.id, label: d.name })),
+            ]}
+            value={districtId}
+            onChange={setDistrictId}
+            emptyMessage={t("home.searchNoResults")}
+          />
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -203,6 +222,23 @@ export function VillaUploadForm({
           className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-gray-900"
           placeholder={t("dashboard.detailsPlaceholder")}
         />
+      </div>
+
+      <div className="rounded-xl border border-amber-100 bg-amber-50/40 p-4">
+        <label className="flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={isAFrame}
+            onChange={(e) => setIsAFrame(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-gray-300"
+          />
+          <span>
+            <span className="block text-sm font-medium text-gray-900">
+              {t("dashboard.aframeLabel")}
+            </span>
+            <span className="mt-1 block text-xs text-gray-600">{t("dashboard.aframeHint")}</span>
+          </span>
+        </label>
       </div>
 
       {facilities.length > 0 && (

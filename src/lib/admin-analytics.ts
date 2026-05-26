@@ -22,8 +22,10 @@ export async function getAdminAnalytics() {
     viewsThisMonth,
     contactsToday,
     contactsThisMonth,
+    totalFavorites,
     topViewedVillas,
     topContactVillas,
+    topFavoriteVillas,
     allViews,
     allContacts,
   ] = await Promise.all([
@@ -33,6 +35,7 @@ export async function getAdminAnalytics() {
     prisma.villaView.count({ where: { createdAt: { gte: monthStart } } }),
     prisma.villaContactReveal.count({ where: { createdAt: { gte: todayStart } } }),
     prisma.villaContactReveal.count({ where: { createdAt: { gte: monthStart } } }),
+    prisma.villaFavorite.count(),
     prisma.villa.findMany({
       include: {
         city: true,
@@ -53,6 +56,17 @@ export async function getAdminAnalytics() {
         _count: { select: { views: true, contactReveals: true } },
       },
       orderBy: { contactReveals: { _count: "desc" } },
+      take: 50,
+    }),
+    prisma.villa.findMany({
+      include: {
+        city: true,
+        user: {
+          include: { villaOwnerProfile: true, realtorProfile: true },
+        },
+        _count: { select: { views: true, contactReveals: true, favorites: true } },
+      },
+      orderBy: { favorites: { _count: "desc" } },
       take: 50,
     }),
     prisma.villaView.findMany({
@@ -78,7 +92,7 @@ export async function getAdminAnalytics() {
       villaOwnerProfile: true,
       realtorProfile: true,
       villas: {
-        include: { _count: { select: { views: true, contactReveals: true } } },
+        include: { _count: { select: { views: true, contactReveals: true, favorites: true } } },
       },
     },
   });
@@ -90,6 +104,7 @@ export async function getAdminAnalytics() {
         : u.realtorProfile?.companyName ?? u.email ?? "—";
       const views = u.villas.reduce((s, v) => s + v._count.views, 0);
       const contacts = u.villas.reduce((s, v) => s + v._count.contactReveals, 0);
+      const favorites = u.villas.reduce((s, v) => s + v._count.favorites, 0);
       return {
         id: u.id,
         name,
@@ -98,6 +113,7 @@ export async function getAdminAnalytics() {
         villaCount: u.villas.length,
         views,
         contacts,
+        favorites,
       };
     })
     .sort((a, b) => b.views - a.views)
@@ -116,6 +132,7 @@ export async function getAdminAnalytics() {
       viewsThisMonth,
       contactsToday,
       contactsThisMonth,
+      favorites: totalFavorites,
     },
     topViewedVillas: topViewedVillas.map((v) => ({
       id: v.id,
@@ -133,6 +150,15 @@ export async function getAdminAnalytics() {
       city: v.city.name,
       isPublished: v.isPublished,
       contacts: v._count.contactReveals,
+      views: v._count.views,
+      ownerName: getOwnerName(v.user),
+    })),
+    topFavoriteVillas: topFavoriteVillas.map((v) => ({
+      id: v.id,
+      title: v.title,
+      city: v.city.name,
+      isPublished: v.isPublished,
+      favorites: v._count.favorites,
       views: v._count.views,
       ownerName: getOwnerName(v.user),
     })),

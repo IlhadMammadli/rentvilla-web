@@ -1,24 +1,38 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { SegmentControl } from "@/components/ui/SegmentControl";
 import { Input } from "@/components/ui/Input";
 import { PhoneInput } from "@/components/ui/PhoneInput";
 import { useTranslations } from "@/i18n/client";
+import { defaultPathForRole } from "@/lib/favorites";
+import type { UserRole } from "@prisma/client";
 
 type LoginType = "email" | "phone";
 
 export function LoginForm() {
   const t = useTranslations();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect");
+
   const [loginType, setLoginType] = useState<LoginType>("email");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("+994");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  function afterLogin(role: UserRole) {
+    if (redirectTo) {
+      router.push(redirectTo);
+    } else {
+      router.push(defaultPathForRole(role));
+    }
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,12 +57,7 @@ export function LoginForm() {
         return;
       }
 
-      if (data.role === "ADMIN" || data.role === "SITE_MANAGER") {
-        router.push("/admin");
-      } else {
-        router.push("/dashboard");
-      }
-      router.refresh();
+      afterLogin(data.role);
     } catch {
       setError(t("common.errorGeneric"));
     } finally {
@@ -80,14 +89,24 @@ export function LoginForm() {
         <PhoneInput label={t("auth.phone")} value={phone} onChange={setPhone} required />
       )}
 
-      <Input
-        label={t("auth.password")}
-        name="password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+      <div>
+        <Input
+          label={t("auth.password")}
+          name="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <p className="mt-2 text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm text-gray-500 hover:text-gray-900 hover:underline"
+          >
+            {t("auth.forgotPassword")}
+          </Link>
+        </p>
+      </div>
 
       {error && (
         <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{error}</p>
@@ -103,7 +122,10 @@ export function LoginForm() {
 
       <p className="text-center text-sm text-gray-500">
         {t("auth.noAccount")}{" "}
-        <Link href="/register" className="font-medium text-gray-900 hover:underline">
+        <Link
+          href={redirectTo ? `/register?redirect=${encodeURIComponent(redirectTo)}` : "/register"}
+          className="font-medium text-gray-900 hover:underline"
+        >
           {t("nav.register")}
         </Link>
       </p>

@@ -3,6 +3,7 @@ import { getTranslations } from "@/i18n/server";
 import { requireStaff } from "@/lib/admin";
 import { isAdmin } from "@/lib/permissions";
 import { AdminUserActions } from "@/components/admin/AdminUserActions";
+import { AdminRealtorPromote } from "@/components/admin/AdminRealtorPromote";
 import { GrantManagerForm } from "@/components/admin/GrantManagerForm";
 
 export default async function AdminUsersPage() {
@@ -64,12 +65,20 @@ export default async function AdminUsersPage() {
                   </td>
                   <td className="px-4 py-3 text-gray-600">{u._count.villas}</td>
                   <td className="px-4 py-3">
-                    <AdminUserActions
-                      userId={u.id}
-                      role={u.role}
-                      isBlocked={u.isBlocked}
-                      isAdmin={actorIsAdmin}
-                    />
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {actorIsAdmin && u.role === "REALTOR" && u.realtorProfile && (
+                        <AdminRealtorPromote
+                          userId={u.id}
+                          isPromoted={u.realtorProfile.isPromoted}
+                        />
+                      )}
+                      <AdminUserActions
+                        userId={u.id}
+                        role={u.role}
+                        isBlocked={u.isBlocked}
+                        isAdmin={actorIsAdmin}
+                      />
+                    </div>
                   </td>
                 </tr>
               );

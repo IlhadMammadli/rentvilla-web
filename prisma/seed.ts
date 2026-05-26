@@ -122,7 +122,32 @@ async function main() {
     include: { villaOwnerProfile: true },
   });
 
+  const BAKU_DISTRICTS = [
+    "Nərimanov",
+    "Yasamal",
+    "Sabunçu",
+    "Xətai",
+    "Nəsimi",
+    "Səbail",
+    "Binəqədi",
+    "Suraxanı",
+    "Pirallahı",
+    "Bakıxanov",
+    "Mərdəkan",
+    "Buzovna",
+    "Şüvəlan",
+  ];
+
   const baku = await prisma.city.findFirst({ where: { name: "Bakı" } });
+  if (baku) {
+    for (const name of BAKU_DISTRICTS) {
+      await prisma.cityDistrict.upsert({
+        where: { cityId_name: { cityId: baku.id, name } },
+        update: {},
+        create: { cityId: baku.id, name },
+      });
+    }
+  }
   const quba = await prisma.city.findFirst({ where: { name: "Quba" } });
   const pool = await prisma.facility.findFirst({
     where: { slug: "swimming-pool" },

@@ -2,9 +2,11 @@ import { prisma } from "./prisma";
 import type { PricePeriod } from "@prisma/client";
 import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
+import { parsePostNumberQuery } from "./post-number";
 
 const villaInclude = {
   city: true,
+  district: true,
   images: { orderBy: { sortOrder: "asc" as const } },
   facilities: { include: { facility: true } },
   user: {
@@ -13,6 +15,13 @@ const villaInclude = {
       realtorProfile: true,
     },
   },
+};
+
+const detailInclude = {
+  city: true,
+  district: true,
+  images: { orderBy: { sortOrder: "asc" as const } },
+  facilities: { include: { facility: true } },
 };
 
 export async function getPublishedVillas() {
@@ -29,12 +38,42 @@ export async function getPublishedVillas() {
 export async function getVillaById(id: string) {
   return prisma.villa.findUnique({
     where: { id, isPublished: true },
-    include: {
-      city: true,
-      images: { orderBy: { sortOrder: "asc" } },
-      facilities: { include: { facility: true } },
-    },
+    include: detailInclude,
   });
+}
+
+export async function getVillaByPostNumber(postNumber: number) {
+  return prisma.villa.findUnique({
+    where: { postNumber },
+    include: detailInclude,
+  });
+}
+
+export async function findAdminVillaByQuery(query: string) {
+  const postNumber = parsePostNumberQuery(query);
+  if (postNumber) {
+    return prisma.villa.findUnique({
+      where: { postNumber },
+      include: {
+        city: true,
+        user: { select: { email: true, isBlocked: true } },
+        _count: { select: { views: true, contactReveals: true } },
+      },
+    });
+  }
+
+  if (query.length >= 8) {
+    return prisma.villa.findUnique({
+      where: { id: query },
+      include: {
+        city: true,
+        user: { select: { email: true, isBlocked: true } },
+        _count: { select: { views: true, contactReveals: true } },
+      },
+    });
+  }
+
+  return null;
 }
 
 export function formatPrice(
@@ -55,9 +94,27 @@ export async function getActiveCities() {
   });
 }
 
+export async function getActiveCitiesWithDistricts() {
+  return prisma.city.findMany({
+    where: { isActive: true },
+    orderBy: { name: "asc" },
+    include: {
+      districts: {
+        where: { isActive: true },
+        orderBy: { name: "asc" },
+        select: { id: true, name: true },
+      },
+    },
+  });
+}
+
 export async function getActiveFacilities() {
   return prisma.facility.findMany({
     where: { isActive: true },
     orderBy: { name: "asc" },
   });
+}
+
+export async function getUserVillaCount(userId: string) {
+  return prisma.villa.count({ where: { userId } });
 }

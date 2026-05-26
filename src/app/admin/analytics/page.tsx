@@ -15,9 +15,10 @@ export default async function AdminAnalyticsPage() {
         <p className="mt-1 text-sm text-gray-500">{t("admin.analyticsSubtitle")}</p>
       </div>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Stat label={t("admin.totalViews")} value={data.totals.views} />
         <Stat label={t("admin.totalContacts")} value={data.totals.contacts} />
+        <Stat label={t("admin.totalFavorites")} value={data.totals.favorites} />
         <Stat
           label={t("admin.viewsToday")}
           value={data.totals.viewsToday}
@@ -92,6 +93,24 @@ export default async function AdminAnalyticsPage() {
 
       <section>
         <h2 className="text-lg font-medium text-gray-900">
+          {t("admin.topFavoriteVillas")} (50)
+        </h2>
+        <RankingTable
+          items={data.topFavoriteVillas.map((v) => ({
+            id: v.id,
+            title: v.title,
+            meta: `${v.city} · ${v.ownerName}`,
+            primary: v.favorites,
+            secondary: v.views,
+          }))}
+          primaryLabel={t("dashboard.favorites")}
+          secondaryLabel={t("dashboard.views")}
+          t={t}
+        />
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium text-gray-900">
           {t("admin.topOwners")} (20)
         </h2>
         <div className="mt-4 overflow-x-auto rounded-xl border border-gray-100">
@@ -103,6 +122,7 @@ export default async function AdminAnalyticsPage() {
                 <th className="px-4 py-3">{t("admin.villas")}</th>
                 <th className="px-4 py-3">{t("dashboard.views")}</th>
                 <th className="px-4 py-3">{t("dashboard.contacts")}</th>
+                <th className="px-4 py-3">{t("dashboard.favorites")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -113,6 +133,7 @@ export default async function AdminAnalyticsPage() {
                   <td className="px-4 py-3">{o.villaCount}</td>
                   <td className="px-4 py-3">{o.views}</td>
                   <td className="px-4 py-3">{o.contacts}</td>
+                  <td className="px-4 py-3">{o.favorites}</td>
                 </tr>
               ))}
             </tbody>

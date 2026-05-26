@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { RegisterForm } from "@/components/auth/RegisterForm";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
+import { defaultPathForRole } from "@/lib/favorites";
 import { getTranslations } from "@/i18n/server";
 
 export default async function RegisterPage() {
   const user = await getSessionUser();
   const { t } = await getTranslations();
 
-  if (user) redirect("/dashboard");
+  if (user) redirect(defaultPathForRole(user.role));
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:py-16">
@@ -18,7 +20,9 @@ export default async function RegisterPage() {
       </div>
 
       <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
-        <RegisterForm />
+        <Suspense fallback={null}>
+          <RegisterForm />
+        </Suspense>
       </div>
 
       <p className="mt-6 text-center text-sm text-gray-500">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireOwnerOrRealtor } from "@/lib/admin";
-import { getActiveCities, getActiveFacilities } from "@/lib/villa";
+import { ensureVillaOwnerProfile } from "@/lib/ensure-owner-profile";
+import { getActiveCitiesWithDistricts, getActiveFacilities } from "@/lib/villa";
 import { prisma } from "@/lib/prisma";
 import { VillaUploadForm } from "@/components/villa/VillaUploadForm";
 import { getTranslations } from "@/i18n/server";
@@ -9,9 +10,11 @@ export default async function NewVillaPage() {
   const user = await requireOwnerOrRealtor();
   const { t } = await getTranslations();
 
+  await ensureVillaOwnerProfile(user.id);
+
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    include: { villaOwnerProfile: true, realtorProfile: true },
+    include: { villaOwnerProfile: true, realtorProfile: true, guestProfile: true },
   });
 
   let defaultContactName = user.displayName;
@@ -20,13 +23,16 @@ export default async function NewVillaPage() {
   if (dbUser?.villaOwnerProfile) {
     defaultContactName = `${dbUser.villaOwnerProfile.firstName} ${dbUser.villaOwnerProfile.lastName}`;
     defaultContactPhone = dbUser.villaOwnerProfile.phone;
+  } else if (dbUser?.guestProfile) {
+    defaultContactName = `${dbUser.guestProfile.firstName} ${dbUser.guestProfile.lastName}`;
+    defaultContactPhone = dbUser.guestProfile.phone;
   } else if (dbUser?.realtorProfile) {
     defaultContactName = dbUser.realtorProfile.companyName;
     defaultContactPhone = dbUser.realtorProfile.phone;
   }
 
   const [cities, facilities] = await Promise.all([
-    getActiveCities(),
+    getActiveCitiesWithDistricts(),
     getActiveFacilities(),
   ]);
 

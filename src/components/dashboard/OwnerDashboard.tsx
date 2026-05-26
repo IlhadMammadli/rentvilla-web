@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Phone, TrendingUp, Home, BarChart3 } from "lucide-react";
+import { Eye, Phone, TrendingUp, Home, BarChart3, Heart } from "lucide-react";
 import { useTranslations } from "@/i18n/client";
 import { LabelWithInfo } from "@/components/dashboard/DashboardLabels";
 import { formatPrice } from "@/lib/villa";
@@ -12,11 +12,13 @@ export type DashboardStats = {
   totalListings: number;
   totalViews: number;
   totalContacts: number;
+  totalFavorites: number;
   contactRate: number;
   viewsLast7: number;
   contactsLast7: number;
   mostViewed: { title: string; views: number } | null;
   mostContacted: { title: string; contacts: number } | null;
+  mostFavorited: { title: string; favorites: number } | null;
   topPerformer: { title: string; views: number; conversion: number } | null;
   villas: {
     id: string;
@@ -27,6 +29,7 @@ export type DashboardStats = {
     isPublished: boolean;
     views: number;
     contacts: number;
+    favorites: number;
     conversion: number;
   }[];
 };
@@ -105,7 +108,7 @@ export function OwnerDashboard({
         <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-gray-400">
           {t("dashboard.analytics")}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <StatCard
             label={t("dashboard.totalListings")}
             info={t("dashboard.infoTotalListings")}
@@ -127,6 +130,12 @@ export function OwnerDashboard({
             icon={<Phone className="h-5 w-5" />}
           />
           <StatCard
+            label={t("dashboard.totalFavorites")}
+            info={t("dashboard.infoTotalFavorites")}
+            value={stats.totalFavorites}
+            icon={<Heart className="h-5 w-5" />}
+          />
+          <StatCard
             label={t("dashboard.contactRate")}
             info={t("dashboard.infoContactRate")}
             value={`${stats.contactRate}%`}
@@ -134,7 +143,7 @@ export function OwnerDashboard({
           />
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <HighlightCard
             title={t("dashboard.mostViewed")}
             info={t("dashboard.infoMostViewed")}
@@ -153,6 +162,17 @@ export function OwnerDashboard({
             metric={
               stats.mostContacted
                 ? `${stats.mostContacted.contacts} ${t("dashboard.contacts")}`
+                : ""
+            }
+            empty={t("dashboard.noDataYet")}
+          />
+          <HighlightCard
+            title={t("dashboard.mostFavorited")}
+            info={t("dashboard.infoMostFavorited")}
+            villaTitle={stats.mostFavorited?.title ?? null}
+            metric={
+              stats.mostFavorited
+                ? `${stats.mostFavorited.favorites} ${t("dashboard.favorites")}`
                 : ""
             }
             empty={t("dashboard.noDataYet")}
@@ -189,7 +209,7 @@ export function OwnerDashboard({
           </div>
         ) : (
           <div className="overflow-x-auto rounded-xl border border-gray-100">
-            <table className="w-full min-w-[720px] text-left text-sm">
+            <table className="w-full min-w-[800px] text-left text-sm">
               <thead className="bg-gray-50 text-gray-500">
                 <tr>
                   <th className="px-4 py-3 font-medium">{t("dashboard.listing")}</th>
@@ -205,6 +225,12 @@ export function OwnerDashboard({
                     <LabelWithInfo
                       label={t("dashboard.contacts")}
                       info={t("dashboard.infoTableContacts")}
+                    />
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    <LabelWithInfo
+                      label={t("dashboard.favorites")}
+                      info={t("dashboard.infoTableFavorites")}
                     />
                   </th>
                   <th className="px-4 py-3 font-medium">
@@ -227,6 +253,7 @@ export function OwnerDashboard({
                     </td>
                     <td className="px-4 py-3 text-gray-900">{villa.views}</td>
                     <td className="px-4 py-3 text-gray-900">{villa.contacts}</td>
+                    <td className="px-4 py-3 text-gray-900">{villa.favorites}</td>
                     <td className="px-4 py-3 text-gray-600">{villa.conversion}%</td>
                     <td className="px-4 py-3">
                       <span
