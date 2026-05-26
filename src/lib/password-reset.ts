@@ -17,21 +17,48 @@ export async function requestPasswordReset(emailRaw: string) {
     return { success: true, message: "If an account exists, a code was sent." };
   }
 
-  await prisma.passwordResetCode.deleteMany({ where: { email } });
-
   const code = generateCode();
   const expiresAt = new Date(Date.now() + CODE_TTL_MS);
 
-  await prisma.passwordResetCode.create({
-    data: { email, code, expiresAt },
-  });
+  try {
+    await prisma.passwordResetCode.deleteMany({ where: { email } });
+    await prisma.passwordResetCode.create({
+      data: { email, code, expiresAt },
+    });
+  } catch (dbError) {
+    console.error("[RentVilla] PasswordResetCode DB error:", dbError);
+    return {
+      error:
+        "Password reset is unavailable (database not updated). Run prisma db push on production.",
+      status: 503 as const,
+      detail: dbError instanceof Error ? dbError.message : "DB error",
+    };
+  }
 
   const mailResult = await sendPasswordResetEmail(email, code);
+
+  if (!mailResult.sent && mailResult.error) {
+    await prisma.passwordResetCode.deleteMany({ where: { email } });
+    const smtpMsg = mailResult.error.toLowerCase();
+    const recipientHint =
+      smtpMsg.includes("recipient") ||
+      smtpMsg.includes("mailbox") ||
+      smtpMsg.includes("invalid")
+        ? " This email address may not accept mail (use a real Gmail/Outlook inbox for testing)."
+        : "";
+    return {
+      error: `Could not send verification email.${recipientHint}`,
+      status: 503 as const,
+      detail: mailResult.error,
+    };
+  }
 
   return {
     success: true,
     message: "If an account exists, a code was sent.",
-    ...(mailResult.devCode ? { devCode: mailResult.devCode } : {}),
+    ...(!mailResult.sent && "devCode" in mailResult && mailResult.devCode
+      ? { devCode: mailResult.devCode }
+      : {}),
   };
 }
 

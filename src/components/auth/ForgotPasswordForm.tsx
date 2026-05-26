@@ -19,12 +19,14 @@ export function ForgotPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [devHint, setDevHint] = useState("");
+  const [codeStepNote, setCodeStepNote] = useState("");
 
   async function sendCode(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
     setDevHint("");
+    setCodeStepNote("");
 
     const res = await fetch("/api/auth/forgot-password", {
       method: "POST",
@@ -35,13 +37,19 @@ export function ForgotPasswordForm() {
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error ?? t("common.errorGeneric"));
+      setError(
+        data.error ??
+          (data.detail && process.env.NODE_ENV === "development"
+            ? `${t("common.errorGeneric")} (${data.detail})`
+            : t("common.errorGeneric"))
+      );
       return;
     }
 
     if (data.devCode) {
       setDevHint(t("auth.resetDevCode", { code: data.devCode }));
     }
+    setCodeStepNote(t("auth.enterCodeHint", { email }));
     setStep("code");
   }
 
@@ -135,7 +143,7 @@ export function ForgotPasswordForm() {
   if (step === "code") {
     return (
       <form onSubmit={verifyCode} className="space-y-6">
-        <p className="text-sm text-gray-500">{t("auth.enterCodeHint", { email })}</p>
+        <p className="text-sm text-gray-500">{codeStepNote || t("auth.enterCodeHint", { email })}</p>
         {devHint && (
           <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900">{devHint}</p>
         )}

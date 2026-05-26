@@ -105,7 +105,7 @@
     "sendCode": "Kod göndər",
     "sendingCode": "Göndərilir…",
     "verificationCode": "Təsdiq kodu",
-    "enterCodeHint": "{email} ünvanına göndərilən kodu daxil edin",
+    "enterCodeHint": "{email} üçün hesab varsa, e-poçtdakı 6 rəqəmli kodu daxil edin. Kod gəlməyibsə, ünvan qeydiyyatda olmaya bilər.",
     "verifyCode": "Kodu təsdiqlə",
     "changeEmail": "Başqa e-poçt istifadə et",
     "newPasswordHint": "Yeni şifrə seçin (ən azı 8 simvol).",

@@ -6,7 +6,15 @@ export async function POST(request: NextRequest) {
     const { email } = await request.json();
     const result = await requestPasswordReset(String(email ?? ""));
     if ("error" in result && "status" in result) {
-      return NextResponse.json({ error: result.error }, { status: result.status });
+      return NextResponse.json(
+        {
+          error: result.error,
+          ...(process.env.NODE_ENV !== "production" && "detail" in result
+            ? { detail: result.detail }
+            : {}),
+        },
+        { status: result.status }
+      );
     }
     return NextResponse.json({
       success: true,

@@ -1,22 +1,43 @@
 import nodemailer from "nodemailer";
 
+function cleanEnv(value: string | undefined) {
+  if (!value) return "";
+  return value.trim().replace(/^["']|["']$/g, "");
+}
+
 function getTransport() {
-  const host = process.env.SMTP_HOST;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const host = cleanEnv(process.env.SMTP_HOST);
+  const user = cleanEnv(process.env.SMTP_USER);
+  const pass = cleanEnv(process.env.SMTP_PASS).replace(/\s/g, "");
 
   if (!host || !user || !pass) return null;
 
+  const port = Number(cleanEnv(process.env.SMTP_PORT) || "587");
+  const secure = cleanEnv(process.env.SMTP_SECURE) === "true";
+
   return nodemailer.createTransport({
     host,
-    port: Number(process.env.SMTP_PORT ?? 587),
-    secure: process.env.SMTP_SECURE === "true",
+    port,
+    secure,
     auth: { user, pass },
+    requireTLS: !secure && port === 587,
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 20_000,
   });
 }
 
-export async function sendPasswordResetEmail(to: string, code: string) {
-  const from = process.env.SMTP_FROM ?? "RentVilla <noreply@rentvilla.az>";
+export type SendEmailResult =
+  | { sent: true }
+  | { sent: false; devCode?: string; error?: string };
+
+export async function sendPasswordResetEmail(
+  to: string,
+  code: string
+): Promise<SendEmailResult> {
+  const user = cleanEnv(process.env.SMTP_USER);
+  const from =
+    cleanEnv(process.env.SMTP_FROM) || (user ? `RentVilla <${user}>` : "RentVilla <noreply@rentvilla.az>");
   const transport = getTransport();
 
   if (!transport) {
@@ -24,20 +45,25 @@ export async function sendPasswordResetEmail(to: string, code: string) {
     return { sent: false, devCode: code };
   }
 
-  await transport.sendMail({
-    from,
-    to,
-    subject: "RentVilla — Password reset code",
-    text: `Your verification code is: ${code}\n\nIt expires in 15 minutes. If you did not request this, ignore this email.`,
-    html: `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
-        <h2 style="color:#111">Reset your password</h2>
-        <p>Enter this verification code on RentVilla:</p>
-        <p style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#111">${code}</p>
-        <p style="color:#666;font-size:14px">Expires in 15 minutes. If you did not request this, you can ignore this email.</p>
-      </div>
-    `,
-  });
-
-  return { sent: true };
+  try {
+    await transport.sendMail({
+      from,
+      to,
+      subject: "RentVilla — Password reset code",
+      text: `Your verification code is: ${code}\n\nIt expires in 15 minutes. If you did not request this, ignore this email.`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+          <h2 style="color:#111">Reset your password</h2>
+          <p>Enter this verification code on RentVilla:</p>
+          <p style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#111">${code}</p>
+          <p style="color:#666;font-size:14px">Expires in 15 minutes. If you did not request this, you can ignore this email.</p>
+        </div>
+      `,
+    });
+    return { sent: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "SMTP send failed";
+    console.error("[RentVilla] SMTP error:", message, error);
+    return { sent: false, error: message };
+  }
 }

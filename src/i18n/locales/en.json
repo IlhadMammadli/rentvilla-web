@@ -105,7 +105,7 @@
     "sendCode": "Send verification code",
     "sendingCode": "Sending…",
     "verificationCode": "Verification code",
-    "enterCodeHint": "Enter the code sent to {email}",
+    "enterCodeHint": "If an account exists for {email}, enter the 6-digit code from your email. No code? The address may not be registered.",
     "verifyCode": "Verify code",
     "changeEmail": "Use a different email",
     "newPasswordHint": "Choose a new password (at least 8 characters).",
