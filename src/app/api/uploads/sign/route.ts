@@ -4,15 +4,12 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getSessionUser } from "@/lib/auth";
 import { canListVillas } from "@/lib/roles";
 import { getObjectStorageConfig } from "@/lib/object-storage";
+import {
+  extensionFromContentType,
+  isAllowedImageContentType,
+} from "@/lib/image-upload";
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
-const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/jpg"]);
-
-function extensionFromMime(type: string): string {
-  if (type === "image/png") return "png";
-  if (type === "image/webp") return "webp";
-  return "jpg";
-}
 
 export async function POST(request: NextRequest) {
   const session = await getSessionUser();
@@ -27,7 +24,10 @@ export async function POST(request: NextRequest) {
       size?: number;
     };
 
-    if (!contentType || !ALLOWED_TYPES.has(contentType)) {
+    const normalizedType =
+      contentType === "image/jpg" ? "image/jpeg" : (contentType ?? "");
+
+    if (!normalizedType || !isAllowedImageContentType(normalizedType)) {
       return NextResponse.json(
         { error: "Unsupported file type. Use JPG, PNG, or WEBP." },
         { status: 400 }
@@ -44,7 +44,10 @@ export async function POST(request: NextRequest) {
     const storage = getObjectStorageConfig();
     if (!storage.isConfigured) {
       return NextResponse.json(
-        { error: "Object storage is not configured on server." },
+        {
+          error:
+            "Object storage is not configured. Add S3_* variables on the server (Netlify env).",
+        },
         { status: 503 }
       );
     }
@@ -55,7 +58,9 @@ export async function POST(request: NextRequest) {
       .slice(0, 40);
     const key = `rentvilla/villas/${Date.now()}-${Math.random()
       .toString(36)
-      .slice(2, 10)}-${safeBaseName}.${extensionFromMime(contentType)}`;
+      .slice(2, 10)}-${safeBaseName}.${extensionFromContentType(normalizedType)}`;
+
+    const useAcl = process.env.S3_SKIP_ACL !== "true";
 
     const client = new S3Client({
       region: storage.region,
@@ -70,25 +75,33 @@ export async function POST(request: NextRequest) {
     const command = new PutObjectCommand({
       Bucket: storage.bucket,
       Key: key,
-      ContentType: contentType,
+      ContentType: normalizedType,
       CacheControl: "public, max-age=31536000, immutable",
-      ACL: "public-read",
+      ...(useAcl ? { ACL: "public-read" as const } : {}),
     });
 
-    const uploadUrl = await getSignedUrl(client, command, { expiresIn: 60 });
+    const uploadUrl = await getSignedUrl(client, command, { expiresIn: 120 });
     const publicUrl = `${storage.publicBaseUrl.replace(/\/+$/, "")}/${key}`;
+
+    const uploadHeaders: Record<string, string> = {
+      "Content-Type": normalizedType,
+    };
+    if (useAcl) {
+      uploadHeaders["x-amz-acl"] = "public-read";
+    }
 
     return NextResponse.json({
       uploadUrl,
       publicUrl,
       method: "PUT",
-      headers: {
-        "Content-Type": contentType,
-      },
+      headers: uploadHeaders,
     });
   } catch (error) {
     console.error("Sign upload error:", error);
-    return NextResponse.json({ error: "Failed to prepare upload" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      { error: `Failed to prepare upload: ${message}` },
+      { status: 500 }
+    );
   }
 }
-

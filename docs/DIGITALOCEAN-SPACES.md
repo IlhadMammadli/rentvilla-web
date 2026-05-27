@@ -37,10 +37,12 @@ Without CDN, public base URL is:
 | Origin | `https://YOUR-NETLIFY-SITE.netlify.app` |
 | Origin (dev) | `http://localhost:3000` |
 | Allowed methods | `GET`, `PUT`, `HEAD` |
-| Allowed headers | `*` |
+| Allowed headers | `*` (must include `Content-Type` and `x-amz-acl`) |
 | Max age | `3000` |
 
 Add both production and localhost origins (two rules or comma-separated origins if the UI allows).
+
+**Important:** If upload fails with 403, the browser must send `x-amz-acl: public-read` on PUT — the app does this automatically after the latest fix. Redeploy if you still see generic errors.
 
 ## 4. Environment variables
 

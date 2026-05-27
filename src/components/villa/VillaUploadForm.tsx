@@ -160,11 +160,21 @@ export function VillaUploadForm({
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      const message = err instanceof Error ? err.message : "";
-      if (message.includes("Cloudinary") || message.includes("storage")) {
-        setError(t("dashboard.photoUploadFailed"));
+      const message = err instanceof Error ? err.message : String(err);
+      if (
+        message.includes("Cloudinary") ||
+        message.includes("storage") ||
+        message.includes("upload") ||
+        message.includes("CORS") ||
+        message.includes("sign")
+      ) {
+        setError(
+          message.length > 20 && message.length < 280
+            ? message
+            : t("dashboard.photoUploadFailed")
+        );
       } else {
-        setError(t("common.errorGeneric"));
+        setError(message || t("common.errorGeneric"));
       }
     } finally {
       setLoading(false);
