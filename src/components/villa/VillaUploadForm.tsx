@@ -12,8 +12,8 @@ import {
   uploadImageToCloudinary,
 } from "@/lib/cloudinary-client";
 import {
-  hasSignedUploadConfig,
-  uploadImageWithSignedUrl,
+  hasObjectStorageUpload,
+  uploadImageToObjectStorage,
 } from "@/lib/object-upload-client";
 import type { CityWithDistricts } from "@/components/home/VillaSearchForm";
 
@@ -96,10 +96,10 @@ export function VillaUploadForm({
     };
 
     try {
-      if (hasSignedUploadConfig()) {
-        const mainImageUrl = await uploadImageWithSignedUrl(mainImage);
+      if (hasObjectStorageUpload()) {
+        const mainImageUrl = await uploadImageToObjectStorage(mainImage);
         const galleryUrls = await Promise.all(
-          galleryImages.map((file) => uploadImageWithSignedUrl(file))
+          galleryImages.map((file) => uploadImageToObjectStorage(file))
         );
 
         const res = await fetch("/api/villas", {

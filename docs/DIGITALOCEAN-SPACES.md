@@ -1,6 +1,6 @@
 # Villa photos with DigitalOcean Spaces
 
-RentVilla uploads villa images **from the browser** to Spaces using a short-lived signed URL from your API. Images are stored permanently and work on Netlify, localhost, and any host.
+RentVilla uploads villa images **through your API** to Spaces (no browser CORS setup). Images are stored permanently and work on Netlify, localhost, and any host.
 
 ## 1. Create a Space
 
@@ -27,22 +27,9 @@ Without CDN, public base URL is:
 2. Name: `rentvilla-uploads`
 3. Copy **Access Key** and **Secret Key** (secret shown once)
 
-## 3. CORS (required for browser upload)
+## 3. CORS (optional)
 
-1. Open your Space → **Settings** → **CORS Configurations**
-2. Add a rule:
-
-| Field | Value |
-|-------|--------|
-| Origin | `https://YOUR-NETLIFY-SITE.netlify.app` |
-| Origin (dev) | `http://localhost:3000` |
-| Allowed methods | `GET`, `PUT`, `HEAD` |
-| Allowed headers | `*` (must include `Content-Type` and `x-amz-acl`) |
-| Max age | `3000` |
-
-Add both production and localhost origins (two rules or comma-separated origins if the UI allows).
-
-**Important:** If upload fails with 403, the browser must send `x-amz-acl: public-read` on PUT — the app does this automatically after the latest fix. Redeploy if you still see generic errors.
+The app uploads photos **through your API** (`/api/uploads/direct`), not directly from the browser to Spaces. You do **not** need CORS rules for villa uploads unless you use signed browser uploads.
 
 ## 4. Environment variables
 
@@ -58,7 +45,6 @@ Replace `fra1` and bucket name with yours.
 | `S3_ACCESS_KEY_ID` | your Spaces access key |
 | `S3_SECRET_ACCESS_KEY` | your Spaces secret key |
 | `S3_PUBLIC_BASE_URL` | `https://rentvilla-uploads.fra1.cdn.digitaloceanspaces.com` |
-| `NEXT_PUBLIC_S3_UPLOAD_MODE` | `signed` |
 | `NEXT_PUBLIC_S3_PUBLIC_BASE_URL` | same as `S3_PUBLIC_BASE_URL` |
 
 ### Local `.env` (same values)
@@ -70,7 +56,6 @@ S3_BUCKET="rentvilla-uploads"
 S3_ACCESS_KEY_ID="your-access-key"
 S3_SECRET_ACCESS_KEY="your-secret-key"
 S3_PUBLIC_BASE_URL="https://rentvilla-uploads.fra1.cdn.digitaloceanspaces.com"
-NEXT_PUBLIC_S3_UPLOAD_MODE="signed"
 NEXT_PUBLIC_S3_PUBLIC_BASE_URL="https://rentvilla-uploads.fra1.cdn.digitaloceanspaces.com"
 ```
 
@@ -86,8 +71,7 @@ NEXT_PUBLIC_S3_PUBLIC_BASE_URL="https://rentvilla-uploads.fra1.cdn.digitaloceans
 2. **Add villa** with a photo
 3. After publish, open the villa — image URL should start with your `S3_PUBLIC_BASE_URL`
 4. If upload fails, check browser **Network** tab:
-   - `POST /api/uploads/sign` → 200
-   - `PUT` to `*.digitaloceanspaces.com` → 200
+   - `POST /api/uploads/direct` → 200 (once per photo)
 
 ## Troubleshooting
 

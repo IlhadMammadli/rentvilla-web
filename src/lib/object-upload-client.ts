@@ -1,67 +1,44 @@
 "use client";
 
-import { normalizeImageContentType } from "@/lib/image-upload";
-
 function cleanEnv(value: string | undefined) {
   return value?.trim().replace(/^["']|["']$/g, "") ?? "";
 }
 
+/** Object storage configured for villa photos (CDN base URL exposed to client). */
+export function hasObjectStorageUpload(): boolean {
+  return Boolean(cleanEnv(process.env.NEXT_PUBLIC_S3_PUBLIC_BASE_URL));
+}
+
+/** @deprecated Browser→Spaces signed PUT needs CORS; use server upload instead. */
 export function hasSignedUploadConfig(): boolean {
   return (
     cleanEnv(process.env.NEXT_PUBLIC_S3_UPLOAD_MODE) === "signed" &&
-    Boolean(cleanEnv(process.env.NEXT_PUBLIC_S3_PUBLIC_BASE_URL))
+    hasObjectStorageUpload()
   );
 }
 
-export async function uploadImageWithSignedUrl(file: File): Promise<string> {
-  const contentType = normalizeImageContentType(file);
+/**
+ * Upload via your API → DigitalOcean Spaces (no CORS issues in browser).
+ */
+export async function uploadImageToObjectStorage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
 
-  const signRes = await fetch("/api/uploads/sign", {
+  const res = await fetch("/api/uploads/direct", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      fileName: file.name,
-      contentType,
-      size: file.size,
-    }),
+    body: formData,
   });
 
-  let signData: {
-    error?: string;
-    uploadUrl?: string;
-    publicUrl?: string;
-    method?: string;
-    headers?: Record<string, string>;
-  };
-
+  let data: { error?: string; publicUrl?: string };
   try {
-    signData = await signRes.json();
+    data = await res.json();
   } catch {
-    throw new Error("Upload sign response invalid");
+    throw new Error("Upload response invalid");
   }
 
-  if (!signRes.ok || !signData.uploadUrl || !signData.publicUrl) {
-    throw new Error(signData.error || `Upload sign failed (${signRes.status})`);
+  if (!res.ok || !data.publicUrl) {
+    throw new Error(data.error || `Upload failed (${res.status})`);
   }
 
-  const uploadRes = await fetch(signData.uploadUrl, {
-    method: signData.method || "PUT",
-    headers: signData.headers ?? { "Content-Type": contentType },
-    body: file,
-  });
-
-  if (!uploadRes.ok) {
-    const detail = await uploadRes.text().catch(() => "");
-    const hint =
-      uploadRes.status === 403
-        ? " (check Spaces CORS and x-amz-acl headers)"
-        : uploadRes.status === 0
-          ? " (possible CORS block — add your site URL to Space CORS)"
-          : "";
-    throw new Error(
-      `Photo upload to storage failed (${uploadRes.status})${hint}${detail ? `: ${detail.slice(0, 120)}` : ""}`
-    );
-  }
-
-  return signData.publicUrl;
+  return data.publicUrl;
 }
