@@ -52,7 +52,7 @@ Replace `fra1` and bucket name with yours.
 
 | Variable | Example |
 |----------|---------|
-| `S3_ENDPOINT` | `https://fra1.digitaloceanspaces.com` |
+| `S3_ENDPOINT` | `https://fra1.digitaloceanspaces.com` (**region only**, not the bucket URL) |
 | `S3_REGION` | `fra1` |
 | `S3_BUCKET` | `rentvilla-uploads` |
 | `S3_ACCESS_KEY_ID` | your Spaces access key |
@@ -94,8 +94,11 @@ NEXT_PUBLIC_S3_PUBLIC_BASE_URL="https://rentvilla-uploads.fra1.cdn.digitaloceans
 ### “Object storage is not configured”
 Missing one of the `S3_*` variables on Netlify. Redeploy after fixing.
 
-### PUT upload fails (CORS error)
-Add your exact site URL to Space CORS (including `https://`).
+### PUT upload fails (CORS error) or “Load failed”
+Add your exact site URL to Space CORS (including `https://`), e.g. `https://renvilla.netlify.app`.
+
+### Upload URL contains bucket name twice (`bucket.bucket.fra1...`)
+`S3_ENDPOINT` must be **`https://fra1.digitaloceanspaces.com`**, not `https://rentvilla-uploads.fra1.digitaloceanspaces.com`.
 
 ### Villa saves but image broken
 - `S3_PUBLIC_BASE_URL` must match CDN/origin URL

@@ -65,11 +65,14 @@ export async function POST(request: NextRequest) {
     const client = new S3Client({
       region: storage.region,
       endpoint: storage.endpoint,
-      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+      forcePathStyle: false,
       credentials: {
         accessKeyId: storage.accessKeyId,
         secretAccessKey: storage.secretAccessKey,
       },
+      // Browser PUT cannot send SDK checksum headers; omit from presigned URL
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
     });
 
     const command = new PutObjectCommand({
