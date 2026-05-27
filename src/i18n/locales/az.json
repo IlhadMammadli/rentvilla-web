@@ -57,7 +57,10 @@
     "promotedRealtorBadge": "Seçilmiş agentlik",
     "realtorListingCount": "{n} aktiv elan",
     "filteringByRealtor": "Bu agentliyin elanları göstərilir.",
-    "aframeFilter": "A-frame villalar"
+    "aframeFilter": "A-frame villalar",
+    "openFilters": "Filtr",
+    "closeFilters": "Filtrləri bağla",
+    "filtersTitle": "Axtarış və filtrlər"
   },
   "favorites": {
     "title": "Seçilmiş villalarım",
@@ -117,7 +120,16 @@
     "resetInvalidCode": "Kod səhvdir və ya vaxtı bitib.",
     "resetPasswordMismatch": "Şifrələr uyğun gəlmir.",
     "resetDevCode": "Dev rejimi (SMTP yoxdur): kodunuz {code}",
-    "backToLogin": "Daxil olmaya qayıt"
+    "backToLogin": "Daxil olmaya qayıt",
+    "registerOtpNotice": "Hesabınızı təsdiqləmək üçün e-poçtunuza 6 rəqəmli kod göndərəcəyik.",
+    "registerSendCode": "Təsdiq kodu göndər",
+    "registerSendingCode": "Kod göndərilir…",
+    "registerOtpHint": "{email} ünvanına göndərilən 6 rəqəmli kodu daxil edin",
+    "registerOtpInvalid": "Kod səhvdir və ya vaxtı bitib",
+    "registerVerifying": "Təsdiqlənir…",
+    "registerComplete": "Qeydiyyatı tamamla",
+    "registerBackToDetails": "Məlumatları dəyiş",
+    "registerDevCode": "Dev rejimi (SMTP yoxdur): kodunuz {code}"
   },
   "villa": {
     "backToVillas": "Villalara qayıt",

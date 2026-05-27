@@ -57,7 +57,10 @@
     "promotedRealtorBadge": "Избранное агентство",
     "realtorListingCount": "{n} активных объявлений",
     "filteringByRealtor": "Показаны объявления этого агентства.",
-    "aframeFilter": "A-frame виллы"
+    "aframeFilter": "A-frame виллы",
+    "openFilters": "Фильтры",
+    "closeFilters": "Закрыть фильтры",
+    "filtersTitle": "Поиск и фильтры"
   },
   "favorites": {
     "title": "Избранное",
@@ -117,7 +120,16 @@
     "resetInvalidCode": "Неверный или просроченный код.",
     "resetPasswordMismatch": "Пароли не совпадают.",
     "resetDevCode": "Dev (без SMTP): ваш код {code}",
-    "backToLogin": "Назад ко входу"
+    "backToLogin": "Назад ко входу",
+    "registerOtpNotice": "Мы отправим 6-значный код на email для подтверждения аккаунта.",
+    "registerSendCode": "Отправить код",
+    "registerSendingCode": "Отправка…",
+    "registerOtpHint": "Введите 6-значный код, отправленный на {email}",
+    "registerOtpInvalid": "Неверный или просроченный код",
+    "registerVerifying": "Проверка…",
+    "registerComplete": "Завершить регистрацию",
+    "registerBackToDetails": "Изменить данные",
+    "registerDevCode": "Dev (без SMTP): ваш код {code}"
   },
   "villa": {
     "backToVillas": "К списку вилл",

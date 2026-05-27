@@ -1,9 +1,9 @@
 import { prisma } from "./prisma";
 import type { UserRole } from "@prisma/client";
 
+/** Where to send users after login/register (unless ?redirect= is set). */
 export function defaultPathForRole(role: UserRole): string {
   if (role === "ADMIN" || role === "SITE_MANAGER") return "/admin";
-  if (role === "REALTOR" || role === "VILLA_OWNER" || role === "GUEST") return "/dashboard";
   return "/";
 }
 

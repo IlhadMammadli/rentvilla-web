@@ -198,6 +198,17 @@ model PasswordResetCode {
   @@index([email])
 }
 
+model RegistrationOtp {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  code      String
+  payload   String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
 model VillaFacility {
   villaId    String
   facilityId String

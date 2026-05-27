@@ -26,11 +26,7 @@ export function LoginForm() {
   const [error, setError] = useState("");
 
   function afterLogin(role: UserRole) {
-    if (redirectTo) {
-      router.push(redirectTo);
-    } else {
-      router.push(defaultPathForRole(role));
-    }
+    router.push(redirectTo || defaultPathForRole(role));
     router.refresh();
   }
 

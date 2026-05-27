@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { VillaCard } from "@/components/VillaCard";
-import { VillaSearchForm } from "@/components/home/VillaSearchForm";
+import { HomeSearchSection } from "@/components/home/HomeSearchSection";
 import { PromotedRealtorCard } from "@/components/home/PromotedRealtorCard";
 import { AFrameFilter } from "@/components/home/AFrameFilter";
 import { getActiveCitiesWithDistricts, getActiveFacilities } from "@/lib/villa";
@@ -41,15 +41,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <section className="mb-8 text-center sm:text-left">
+      <section className="mb-6 text-center sm:mb-8 sm:text-left">
         <h1 className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
           {t("home.title")}
         </h1>
         <p className="mt-3 max-w-xl text-gray-500">{t("home.subtitle")}</p>
       </section>
 
-      <Suspense fallback={<div className="mb-10 h-32 animate-pulse rounded-2xl bg-gray-100" />}>
-        <VillaSearchForm cities={cities} facilities={facilities} />
+      <Suspense fallback={null}>
+        <HomeSearchSection cities={cities} facilities={facilities} />
       </Suspense>
 
       {filters.realtorUserId && (

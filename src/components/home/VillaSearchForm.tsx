@@ -18,9 +18,11 @@ type FacilityOption = { id: string; name: string };
 export function VillaSearchForm({
   cities,
   facilities,
+  onAfterSearch,
 }: {
   cities: CityWithDistricts[];
   facilities: FacilityOption[];
+  onAfterSearch?: () => void;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -82,6 +84,7 @@ export function VillaSearchForm({
     if (aframe) params.set("aframe", aframe);
 
     router.push(params.toString() ? `/?${params}` : "/");
+    onAfterSearch?.();
   }
 
   function clearSearch() {

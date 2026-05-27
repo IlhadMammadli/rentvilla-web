@@ -57,7 +57,10 @@
     "promotedRealtorBadge": "Featured agency",
     "realtorListingCount": "{n} active listing(s)",
     "filteringByRealtor": "Showing listings from this agency.",
-    "aframeFilter": "A-frame villas"
+    "aframeFilter": "A-frame villas",
+    "openFilters": "Filters",
+    "closeFilters": "Close filters",
+    "filtersTitle": "Search & filters"
   },
   "favorites": {
     "title": "My favorites",
@@ -117,7 +120,16 @@
     "resetInvalidCode": "Invalid or expired code. Try again.",
     "resetPasswordMismatch": "Passwords do not match.",
     "resetDevCode": "Dev mode (no SMTP): your code is {code}",
-    "backToLogin": "Back to sign in"
+    "backToLogin": "Back to sign in",
+    "registerOtpNotice": "We will send a 6-digit code to your email to verify your account.",
+    "registerSendCode": "Send verification code",
+    "registerSendingCode": "Sending code…",
+    "registerOtpHint": "Enter the 6-digit code sent to {email}",
+    "registerOtpInvalid": "Invalid or expired code",
+    "registerVerifying": "Verifying…",
+    "registerComplete": "Complete registration",
+    "registerBackToDetails": "Edit registration details",
+    "registerDevCode": "Dev mode (no SMTP): your code is {code}"
   },
   "villa": {
     "backToVillas": "Back to villas",

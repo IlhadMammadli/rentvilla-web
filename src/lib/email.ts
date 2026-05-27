@@ -31,6 +31,43 @@ export type SendEmailResult =
   | { sent: true }
   | { sent: false; devCode?: string; error?: string };
 
+export async function sendRegistrationOtpEmail(
+  to: string,
+  code: string
+): Promise<SendEmailResult> {
+  const user = cleanEnv(process.env.SMTP_USER);
+  const from =
+    cleanEnv(process.env.SMTP_FROM) || (user ? `RentVilla <${user}>` : "RentVilla <noreply@rentvilla.az>");
+  const transport = getTransport();
+
+  if (!transport) {
+    console.log(`[RentVilla] Registration OTP for ${to}: ${code}`);
+    return { sent: false, devCode: code };
+  }
+
+  try {
+    await transport.sendMail({
+      from,
+      to,
+      subject: "RentVilla — Verify your email",
+      text: `Your registration code is: ${code}\n\nEnter this code to complete your RentVilla account. Expires in 15 minutes.`,
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
+          <h2 style="color:#111">Verify your email</h2>
+          <p>Enter this code to finish creating your RentVilla account:</p>
+          <p style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#111">${code}</p>
+          <p style="color:#666;font-size:14px">Expires in 15 minutes. If you did not sign up, ignore this email.</p>
+        </div>
+      `,
+    });
+    return { sent: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "SMTP send failed";
+    console.error("[RentVilla] SMTP registration OTP error:", message, error);
+    return { sent: false, error: message };
+  }
+}
+
 export async function sendPasswordResetEmail(
   to: string,
   code: string
