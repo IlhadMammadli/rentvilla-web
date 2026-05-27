@@ -61,7 +61,7 @@ NEXT_PUBLIC_S3_PUBLIC_BASE_URL="https://rentvilla-uploads.fra1.cdn.digitaloceans
 
 ## 5. Deploy
 
-1. Commit and push code (signed upload API must be deployed)
+1. Commit and push code (upload API must be deployed)
 2. **Redeploy Netlify** after adding env vars (`NEXT_PUBLIC_*` are baked in at build time)
 3. Restart local dev: `npm run dev`
 
