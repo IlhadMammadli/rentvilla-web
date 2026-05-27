@@ -11,6 +11,10 @@ import {
   hasPublicCloudinaryConfig,
   uploadImageToCloudinary,
 } from "@/lib/cloudinary-client";
+import {
+  hasSignedUploadConfig,
+  uploadImageWithSignedUrl,
+} from "@/lib/object-upload-client";
 import type { CityWithDistricts } from "@/components/home/VillaSearchForm";
 
 type Facility = { id: string; name: string };
@@ -92,6 +96,27 @@ export function VillaUploadForm({
     };
 
     try {
+      if (hasSignedUploadConfig()) {
+        const mainImageUrl = await uploadImageWithSignedUrl(mainImage);
+        const galleryUrls = await Promise.all(
+          galleryImages.map((file) => uploadImageWithSignedUrl(file))
+        );
+
+        const res = await fetch("/api/villas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, mainImageUrl, galleryUrls }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? t("dashboard.publishFailed"));
+          return;
+        }
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
       if (hasPublicCloudinaryConfig()) {
         const mainImageUrl = await uploadImageToCloudinary(mainImage);
         const galleryUrls = await Promise.all(
@@ -136,7 +161,7 @@ export function VillaUploadForm({
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "";
-      if (message.includes("Cloudinary")) {
+      if (message.includes("Cloudinary") || message.includes("storage")) {
         setError(t("dashboard.photoUploadFailed"));
       } else {
         setError(t("common.errorGeneric"));

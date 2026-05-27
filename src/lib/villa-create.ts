@@ -1,6 +1,12 @@
 import { requiresCloudStorage } from "./upload";
+import { getPublicStorageHost } from "./object-storage";
 
-const ALLOWED_IMAGE_HOSTS = new Set(["res.cloudinary.com", "images.unsplash.com"]);
+function getAllowedImageHosts() {
+  const hosts = new Set(["res.cloudinary.com", "images.unsplash.com"]);
+  const storageHost = getPublicStorageHost();
+  if (storageHost) hosts.add(storageHost);
+  return hosts;
+}
 
 export function isAllowedImageUrl(url: string): boolean {
   const trimmed = url.trim();
@@ -12,7 +18,7 @@ export function isAllowedImageUrl(url: string): boolean {
 
   try {
     const { hostname, protocol } = new URL(trimmed);
-    return protocol === "https:" && ALLOWED_IMAGE_HOSTS.has(hostname);
+    return protocol === "https:" && getAllowedImageHosts().has(hostname);
   } catch {
     return false;
   }
@@ -33,6 +39,13 @@ export function mapVillaCreateError(error: unknown): { message: string; status: 
     return {
       status: 502,
       message: "Photo upload failed. Check Cloudinary upload preset (must be unsigned) and try smaller images.",
+    };
+  }
+
+  if (raw.includes("Object storage")) {
+    return {
+      status: 502,
+      message: "Photo upload failed. Check object storage settings (S3/R2/Spaces).",
     };
   }
 

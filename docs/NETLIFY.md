@@ -84,22 +84,13 @@ npm run db:migrate-from-sqlite
 
 ### Image uploads on Netlify (required for new villas)
 
-Netlify cannot save files to disk. Set up free [Cloudinary](https://cloudinary.com):
+Netlify cannot save files to disk reliably. Use **DigitalOcean Spaces** (step-by-step guide):
 
-1. Create account → **Settings** → **Upload** → add **Upload preset**
-2. Set **Signing mode** to **Unsigned**
-3. Add to Netlify environment variables (same values for server + browser):
+→ **[docs/DIGITALOCEAN-SPACES.md](./DIGITALOCEAN-SPACES.md)**
 
-| Variable | Example |
-|----------|---------|
-| `CLOUDINARY_CLOUD_NAME` | `your-cloud-name` |
-| `CLOUDINARY_UPLOAD_PRESET` | `rentvilla_unsigned` |
-| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | `your-cloud-name` |
-| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | `rentvilla_unsigned` |
+Summary: create Space → Spaces API keys → CORS → add `S3_*` and `NEXT_PUBLIC_S3_*` env vars → redeploy.
 
-4. Redeploy Netlify (required after adding `NEXT_PUBLIC_*` vars)
-
-Photos upload **directly from the browser to Cloudinary**, then the villa is saved with Cloudinary URLs. Without these vars, villa publish fails on Netlify with a clear error.
+The app signs upload URLs at `/api/uploads/sign`, uploads from the browser to Spaces, and saves the public CDN URL in the database.
 
 ### Villas show on production but photos are missing
 
@@ -107,8 +98,8 @@ Usually you uploaded villas **locally** (`npm run dev`) while `DATABASE_URL` poi
 
 **Fix:**
 
-1. Add `CLOUDINARY_CLOUD_NAME` and `CLOUDINARY_UPLOAD_PRESET` to **both** Netlify and your local `.env`
+1. Add object storage env vars to **both** Netlify and your local `.env`
 2. Redeploy Netlify
 3. Delete the broken villas and **add them again** (or we can add an edit-photos flow later)
 
-Migrated villas with `/uploads/villas/...` paths work on **localhost** only until you re-upload photos or use Cloudinary.
+Migrated villas with `/uploads/villas/...` paths work on **localhost** only until you re-upload photos to object storage.
