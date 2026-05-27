@@ -86,14 +86,29 @@ npm run db:migrate-from-sqlite
 
 Netlify cannot save files to disk. Set up free [Cloudinary](https://cloudinary.com):
 
-1. Create account → **Settings** → **Upload** → add **Upload preset** (unsigned)
-2. Add to Netlify environment variables:
+1. Create account → **Settings** → **Upload** → add **Upload preset**
+2. Set **Signing mode** to **Unsigned**
+3. Add to Netlify environment variables (same values for server + browser):
 
 | Variable | Example |
 |----------|---------|
 | `CLOUDINARY_CLOUD_NAME` | `your-cloud-name` |
 | `CLOUDINARY_UPLOAD_PRESET` | `rentvilla_unsigned` |
+| `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` | `your-cloud-name` |
+| `NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET` | `rentvilla_unsigned` |
 
-Redeploy. New villa uploads will use Cloudinary URLs that work everywhere.
+4. Redeploy Netlify (required after adding `NEXT_PUBLIC_*` vars)
+
+Photos upload **directly from the browser to Cloudinary**, then the villa is saved with Cloudinary URLs. Without these vars, villa publish fails on Netlify with a clear error.
+
+### Villas show on production but photos are missing
+
+Usually you uploaded villas **locally** (`npm run dev`) while `DATABASE_URL` points to the **same Neon database** as Netlify. Image files stay on your laptop (`/uploads/villas/...`); production only has the DB row.
+
+**Fix:**
+
+1. Add `CLOUDINARY_CLOUD_NAME` and `CLOUDINARY_UPLOAD_PRESET` to **both** Netlify and your local `.env`
+2. Redeploy Netlify
+3. Delete the broken villas and **add them again** (or we can add an edit-photos flow later)
 
 Migrated villas with `/uploads/villas/...` paths work on **localhost** only until you re-upload photos or use Cloudinary.

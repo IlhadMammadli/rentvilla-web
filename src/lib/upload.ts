@@ -3,6 +3,27 @@ import path from "path";
 
 const VILLA_UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "villas");
 
+function cleanEnv(value: string | undefined) {
+  return value?.trim().replace(/^["']|["']$/g, "") ?? "";
+}
+
+export function hasCloudinaryConfig(): boolean {
+  return Boolean(
+    cleanEnv(process.env.CLOUDINARY_CLOUD_NAME) &&
+      cleanEnv(process.env.CLOUDINARY_UPLOAD_PRESET)
+  );
+}
+
+/** Netlify/Vercel cannot persist files under public/uploads. */
+export function requiresCloudStorage(): boolean {
+  if (process.env.USE_LOCAL_UPLOADS === "true") return false;
+  return Boolean(
+    process.env.NETLIFY === "true" ||
+      process.env.VERCEL === "1" ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME
+  );
+}
+
 async function saveToLocalDisk(file: File): Promise<string> {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
@@ -14,8 +35,8 @@ async function saveToLocalDisk(file: File): Promise<string> {
 }
 
 async function saveToCloudinary(file: File): Promise<string> {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET;
+  const cloudName = cleanEnv(process.env.CLOUDINARY_CLOUD_NAME);
+  const uploadPreset = cleanEnv(process.env.CLOUDINARY_UPLOAD_PRESET);
 
   if (!cloudName || !uploadPreset) {
     throw new Error("CLOUDINARY_NOT_CONFIGURED");
@@ -41,22 +62,15 @@ async function saveToCloudinary(file: File): Promise<string> {
 }
 
 export async function saveVillaImage(file: File): Promise<string> {
-  try {
-    return await saveToLocalDisk(file);
-  } catch (localError) {
-    console.warn("Local image save failed, trying Cloudinary:", localError);
-    try {
-      return await saveToCloudinary(file);
-    } catch (cloudError) {
-      if (
-        cloudError instanceof Error &&
-        cloudError.message === "CLOUDINARY_NOT_CONFIGURED"
-      ) {
-        throw new Error(
-          "Cannot save images on this server. Add CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET to environment variables (see docs/NETLIFY.md)."
-        );
-      }
-      throw cloudError;
-    }
+  if (hasCloudinaryConfig()) {
+    return saveToCloudinary(file);
   }
+
+  if (requiresCloudStorage()) {
+    throw new Error(
+      "Cannot save images on this server. Add CLOUDINARY_CLOUD_NAME and CLOUDINARY_UPLOAD_PRESET to environment variables (see docs/NETLIFY.md)."
+    );
+  }
+
+  return saveToLocalDisk(file);
 }

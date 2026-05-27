@@ -214,6 +214,7 @@
     "publish": "Publish villa",
     "publishing": "Publishing…",
     "publishFailed": "Failed to create villa",
+    "photoUploadFailed": "Photo upload failed. Check Cloudinary settings in Netlify or use smaller images.",
     "manageHint": "Manage your listings — only visible when you are logged in.",
     "promotionTitle": "Promote your listings or company",
     "promotionHint": "Paid promotion for villas and realtor profiles is coming soon. Contact admin to be featured early."

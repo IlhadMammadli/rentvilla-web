@@ -7,6 +7,10 @@ import { PhoneInput } from "@/components/ui/PhoneInput";
 import { FilterCombobox } from "@/components/ui/FilterCombobox";
 import { useTranslations } from "@/i18n/client";
 import { MAX_GALLERY_IMAGES } from "@/lib/constants";
+import {
+  hasPublicCloudinaryConfig,
+  uploadImageToCloudinary,
+} from "@/lib/cloudinary-client";
 import type { CityWithDistricts } from "@/components/home/VillaSearchForm";
 
 type Facility = { id: string; name: string };
@@ -71,24 +75,57 @@ export function VillaUploadForm({
       return;
     }
 
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("cityId", cityId);
-    if (districtId) formData.append("districtId", districtId);
-    formData.append("price", price);
-    formData.append("pricePeriod", pricePeriod);
-    formData.append("guestCount", guestCount);
-    formData.append("roomCount", roomCount);
-    formData.append("contactName", contactName);
-    formData.append("contactPhone", contactPhone);
-    formData.append("description", description);
-    formData.append("address", address);
-    formData.append("isAFrame", isAFrame ? "true" : "false");
-    formData.append("mainImage", mainImage);
-    galleryImages.forEach((file) => formData.append("galleryImages", file));
-    selectedFacilities.forEach((id) => formData.append("facilityIds", id));
+    const payload = {
+      title,
+      cityId,
+      districtId: districtId || undefined,
+      price,
+      pricePeriod,
+      guestCount,
+      roomCount,
+      contactName,
+      contactPhone,
+      description,
+      address,
+      isAFrame,
+      facilityIds: selectedFacilities,
+    };
 
     try {
+      if (hasPublicCloudinaryConfig()) {
+        const mainImageUrl = await uploadImageToCloudinary(mainImage);
+        const galleryUrls = await Promise.all(
+          galleryImages.map((file) => uploadImageToCloudinary(file))
+        );
+
+        const res = await fetch("/api/villas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, mainImageUrl, galleryUrls }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setError(data.error ?? t("dashboard.publishFailed"));
+          return;
+        }
+        router.push("/dashboard");
+        router.refresh();
+        return;
+      }
+
+      const formData = new FormData();
+      Object.entries(payload).forEach(([key, value]) => {
+        if (key === "facilityIds" && Array.isArray(value)) {
+          value.forEach((id) => formData.append("facilityIds", id));
+        } else if (key === "isAFrame") {
+          formData.append(key, value ? "true" : "false");
+        } else if (value !== undefined && value !== "") {
+          formData.append(key, String(value));
+        }
+      });
+      formData.append("mainImage", mainImage);
+      galleryImages.forEach((file) => formData.append("galleryImages", file));
+
       const res = await fetch("/api/villas", { method: "POST", body: formData });
       const data = await res.json();
       if (!res.ok) {
@@ -97,8 +134,13 @@ export function VillaUploadForm({
       }
       router.push("/dashboard");
       router.refresh();
-    } catch {
-      setError(t("common.errorGeneric"));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      if (message.includes("Cloudinary")) {
+        setError(t("dashboard.photoUploadFailed"));
+      } else {
+        setError(t("common.errorGeneric"));
+      }
     } finally {
       setLoading(false);
     }

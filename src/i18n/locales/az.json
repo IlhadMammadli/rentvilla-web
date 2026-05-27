@@ -214,6 +214,7 @@
     "publish": "Dərc et",
     "publishing": "Dərc olunur…",
     "publishFailed": "Villa yaradıla bilmədi",
+    "photoUploadFailed": "Şəkil yüklənmədi. Netlify-da Cloudinary parametrlərini yoxlayın və ya daha kiçik şəkillər seçin.",
     "manageHint": "Elanlarınızı idarə edin — yalnız daxil olanda görünür.",
     "promotionTitle": "Elan və ya şirkətinizi təbliğ edin",
     "promotionHint": "Villa və rieltor profili üçün ödənişli təbliğ tezliklə. Erkən təbliğ üçün adminlə əlaqə saxlayın."
