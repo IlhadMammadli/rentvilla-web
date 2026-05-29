@@ -53,7 +53,7 @@
     "promotedVillas": "Tövsiyə olunan villalar",
     "promotedVillasHint": "Seçilmiş elanlar — rieltorlar üçün ödənişli təbliğ tezliklə.",
     "promotedRealtors": "Tövsiyə olunan agentliklər",
-    "promotedRealtorsHint": "RentVilla-da etibarlı rieltor şirkətləri.",
+    "promotedRealtorsHint": "VillaHub-da etibarlı rieltor şirkətləri.",
     "promotedRealtorBadge": "Seçilmiş agentlik",
     "realtorListingCount": "{n} aktiv elan",
     "filteringByRealtor": "Bu agentliyin elanları göstərilir.",
@@ -82,7 +82,7 @@
     "loginTitle": "Xoş gəldiniz",
     "loginSubtitle": "Villalarınızı idarə etmək üçün daxil olun",
     "registerTitle": "Hesab yaradın",
-    "registerSubtitle": "RentVilla-da villa yerləşdirmək üçün qeydiyyatdan keçin",
+    "registerSubtitle": "VillaHub-da villa yerləşdirmək üçün qeydiyyatdan keçin",
     "email": "E-poçt",
     "phone": "Telefon nömrəsi",
     "password": "Şifrə",
@@ -106,7 +106,7 @@
     "lastName": "Soyad",
     "companyName": "Şirkət adı",
     "companyLogo": "Şirkət loqosu",
-    "logoHint": "Yüklənməsə, standart RentVilla loqosu istifadə olunacaq.",
+    "logoHint": "Yüklənməsə, standart VillaHub loqosu istifadə olunacaq.",
     "mainPhone": "Əsas telefon nömrəsi",
     "forgotPassword": "Şifrəni unutmusunuz?",
     "forgotPasswordTitle": "Şifrəni bərpa et",
@@ -227,7 +227,7 @@
     "detailsPlaceholder": "Villa, imkanlar, qaydalar haqqında yazın…",
     "facilitiesLabel": "İmkanlar",
     "photo": "Şəkil",
-    "infoTotalListings": "RentVilla-da dərc etdiyiniz villa elanlarının sayı.",
+    "infoTotalListings": "VillaHub-da dərc etdiyiniz villa elanlarının sayı.",
     "infoTotalViews": "Kimsə villa səhifənizi açanda sayılır. Hər brauzer sessiyasında bir dəfə (yeni sessiyada yenidən sayıla bilər).",
     "infoTotalContacts": "Ziyarətçi \"Əlaqə nömrəsini göstər\" düyməsinə basanda sayılır — kirayə marağı.",
     "infoContactRate": "Əlaqə göstərilməsinin baxışlara nisbəti: (əlaqə ÷ baxış) × 100. Yüksək daha yaxşıdır.",
@@ -321,7 +321,7 @@
     "districtsExample": "{city} üçün nümunə: Nərimanov, Yasamal, Sabunçu, Xətai…"
   },
   "meta": {
-    "title": "RentVilla — Azərbaycanda villa kirayəsi",
+    "title": "VillaHub — Azərbaycanda villa kirayəsi",
     "description": "Azərbaycan üzrə premium villalar tapın və kirayələyin"
   }
 }

@@ -4,7 +4,9 @@ import { Building2 } from "lucide-react";
 import type { Locale } from "@/i18n/config";
 import { getMessages } from "@/i18n/messages";
 
-const DEFAULT_LOGO = "/logo-default.svg";
+import { SITE_LOGO_PATH } from "@/lib/constants";
+
+const DEFAULT_LOGO = SITE_LOGO_PATH;
 
 type PromotedRealtorCardProps = {
   userId: string;

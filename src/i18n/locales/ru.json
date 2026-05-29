@@ -53,7 +53,7 @@
     "promotedVillas": "Рекомендуемые виллы",
     "promotedVillasHint": "Избранные объявления — платное продвижение для риелторов скоро.",
     "promotedRealtors": "Рекомендуемые агентства",
-    "promotedRealtorsHint": "Проверенные риелторские компании на RentVilla.",
+    "promotedRealtorsHint": "Проверенные риелторские компании на VillaHub.",
     "promotedRealtorBadge": "Избранное агентство",
     "realtorListingCount": "{n} активных объявлений",
     "filteringByRealtor": "Показаны объявления этого агентства.",
@@ -82,7 +82,7 @@
     "loginTitle": "С возвращением",
     "loginSubtitle": "Войдите, чтобы управлять своими виллами",
     "registerTitle": "Создать аккаунт",
-    "registerSubtitle": "Зарегистрируйтесь, чтобы размещать виллы на RentVilla",
+    "registerSubtitle": "Зарегистрируйтесь, чтобы размещать виллы на VillaHub",
     "email": "Email",
     "phone": "Номер телефона",
     "password": "Пароль",
@@ -106,7 +106,7 @@
     "lastName": "Фамилия",
     "companyName": "Название компании",
     "companyLogo": "Логотип компании",
-    "logoHint": "Если не загружен, будет использован логотип RentVilla.",
+    "logoHint": "Если не загружен, будет использован логотип VillaHub.",
     "mainPhone": "Основной телефон",
     "forgotPassword": "Забыли пароль?",
     "forgotPasswordTitle": "Сброс пароля",
@@ -227,7 +227,7 @@
     "detailsPlaceholder": "Опишите виллу, удобства, правила…",
     "facilitiesLabel": "Удобства",
     "photo": "Фото",
-    "infoTotalListings": "Количество ваших объявлений на RentVilla.",
+    "infoTotalListings": "Количество ваших объявлений на VillaHub.",
     "infoTotalViews": "Считается при открытии страницы виллы. Один раз за сессию браузера.",
     "infoTotalContacts": "Считается при нажатии «Показать номер» — интерес к аренде.",
     "infoContactRate": "Доля просмотров с показом контакта: (контакты ÷ просмотры) × 100.",
@@ -321,7 +321,7 @@
     "districtsExample": "Пример для {city}: Нариманов, Ясамал, Сабунчи, Хатаи…"
   },
   "meta": {
-    "title": "RentVilla — Аренда вилл в Азербайджане",
+    "title": "VillaHub — Аренда вилл в Азербайджане",
     "description": "Найдите и арендуйте премиальные виллы по всему Азербайджану"
   }
 }

@@ -13,6 +13,15 @@ function getStorageHostname() {
 const storageHostname = getStorageHostname();
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/logo-default.svg",
+        destination: "/villahub-logo.png",
+        permanent: true,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

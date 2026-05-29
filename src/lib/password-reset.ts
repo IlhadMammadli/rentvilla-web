@@ -26,7 +26,7 @@ export async function requestPasswordReset(emailRaw: string) {
       data: { email, code, expiresAt },
     });
   } catch (dbError) {
-    console.error("[RentVilla] PasswordResetCode DB error:", dbError);
+    console.error("[VillaHub] PasswordResetCode DB error:", dbError);
     return {
       error:
         "Password reset is unavailable (database not updated). Run prisma db push on production.",

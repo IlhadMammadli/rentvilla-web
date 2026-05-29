@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { SITE_NAME } from "@/lib/constants";
 
 function cleanEnv(value: string | undefined) {
   if (!value) return "";
@@ -37,11 +38,11 @@ export async function sendRegistrationOtpEmail(
 ): Promise<SendEmailResult> {
   const user = cleanEnv(process.env.SMTP_USER);
   const from =
-    cleanEnv(process.env.SMTP_FROM) || (user ? `RentVilla <${user}>` : "RentVilla <noreply@rentvilla.az>");
+    cleanEnv(process.env.SMTP_FROM) || (user ? `${SITE_NAME} <${user}>` : `${SITE_NAME} <noreply@villahub.az>`);
   const transport = getTransport();
 
   if (!transport) {
-    console.log(`[RentVilla] Registration OTP for ${to}: ${code}`);
+    console.log(`[${SITE_NAME}] Registration OTP for ${to}: ${code}`);
     return { sent: false, devCode: code };
   }
 
@@ -49,12 +50,12 @@ export async function sendRegistrationOtpEmail(
     await transport.sendMail({
       from,
       to,
-      subject: "RentVilla — Verify your email",
-      text: `Your registration code is: ${code}\n\nEnter this code to complete your RentVilla account. Expires in 15 minutes.`,
+      subject: `${SITE_NAME} — Verify your email`,
+      text: `Your registration code is: ${code}\n\nEnter this code to complete your ${SITE_NAME} account. Expires in 15 minutes.`,
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
           <h2 style="color:#111">Verify your email</h2>
-          <p>Enter this code to finish creating your RentVilla account:</p>
+          <p>Enter this code to finish creating your ${SITE_NAME} account:</p>
           <p style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#111">${code}</p>
           <p style="color:#666;font-size:14px">Expires in 15 minutes. If you did not sign up, ignore this email.</p>
         </div>
@@ -63,7 +64,7 @@ export async function sendRegistrationOtpEmail(
     return { sent: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : "SMTP send failed";
-    console.error("[RentVilla] SMTP registration OTP error:", message, error);
+    console.error(`[${SITE_NAME}] SMTP registration OTP error:`, message, error);
     return { sent: false, error: message };
   }
 }
@@ -74,11 +75,11 @@ export async function sendPasswordResetEmail(
 ): Promise<SendEmailResult> {
   const user = cleanEnv(process.env.SMTP_USER);
   const from =
-    cleanEnv(process.env.SMTP_FROM) || (user ? `RentVilla <${user}>` : "RentVilla <noreply@rentvilla.az>");
+    cleanEnv(process.env.SMTP_FROM) || (user ? `${SITE_NAME} <${user}>` : `${SITE_NAME} <noreply@villahub.az>`);
   const transport = getTransport();
 
   if (!transport) {
-    console.log(`[RentVilla] Password reset code for ${to}: ${code}`);
+    console.log(`[${SITE_NAME}] Password reset code for ${to}: ${code}`);
     return { sent: false, devCode: code };
   }
 
@@ -86,12 +87,12 @@ export async function sendPasswordResetEmail(
     await transport.sendMail({
       from,
       to,
-      subject: "RentVilla — Password reset code",
+      subject: `${SITE_NAME} — Password reset code`,
       text: `Your verification code is: ${code}\n\nIt expires in 15 minutes. If you did not request this, ignore this email.`,
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px">
           <h2 style="color:#111">Reset your password</h2>
-          <p>Enter this verification code on RentVilla:</p>
+          <p>Enter this verification code on ${SITE_NAME}:</p>
           <p style="font-size:32px;font-weight:bold;letter-spacing:8px;color:#111">${code}</p>
           <p style="color:#666;font-size:14px">Expires in 15 minutes. If you did not request this, you can ignore this email.</p>
         </div>
@@ -100,7 +101,7 @@ export async function sendPasswordResetEmail(
     return { sent: true };
   } catch (error) {
     const message = error instanceof Error ? error.message : "SMTP send failed";
-    console.error("[RentVilla] SMTP error:", message, error);
+    console.error(`[${SITE_NAME}] SMTP error:`, message, error);
     return { sent: false, error: message };
   }
 }

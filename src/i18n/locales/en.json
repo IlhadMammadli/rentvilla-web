@@ -53,7 +53,7 @@
     "promotedVillas": "Promoted villas",
     "promotedVillasHint": "Featured listings — paid promotion coming soon for realtors.",
     "promotedRealtors": "Promoted agencies",
-    "promotedRealtorsHint": "Trusted realtor companies on RentVilla.",
+    "promotedRealtorsHint": "Trusted realtor companies on VillaHub.",
     "promotedRealtorBadge": "Featured agency",
     "realtorListingCount": "{n} active listing(s)",
     "filteringByRealtor": "Showing listings from this agency.",
@@ -82,7 +82,7 @@
     "loginTitle": "Welcome back",
     "loginSubtitle": "Sign in to manage your villas",
     "registerTitle": "Create account",
-    "registerSubtitle": "Register to list your villas on RentVilla",
+    "registerSubtitle": "Register to list your villas on VillaHub",
     "email": "Email",
     "phone": "Phone number",
     "password": "Password",
@@ -106,7 +106,7 @@
     "lastName": "Surname",
     "companyName": "Company name",
     "companyLogo": "Company logo",
-    "logoHint": "If not uploaded, the default RentVilla logo will be used.",
+    "logoHint": "If not uploaded, the default VillaHub logo will be used.",
     "mainPhone": "Main phone number",
     "forgotPassword": "Forgot password?",
     "forgotPasswordTitle": "Reset password",
@@ -227,7 +227,7 @@
     "detailsPlaceholder": "Describe the villa, amenities, rules, etc.",
     "facilitiesLabel": "Facilities",
     "photo": "Photo",
-    "infoTotalListings": "The number of villa listings you have published on RentVilla.",
+    "infoTotalListings": "The number of villa listings you have published on VillaHub.",
     "infoTotalViews": "Counted each time someone opens your villa detail page. One view per browser session (if they refresh, it may count again in a new session).",
     "infoTotalContacts": "Counted when a visitor clicks \"Show contact number\" on your listing — this means they are interested in renting.",
     "infoTotalFavorites": "How many visitors saved your listings to their favorites list.",
@@ -321,7 +321,7 @@
     "districtsExample": "Example for {city}: Nərimanov, Yasamal, Sabunçu, Xətai…"
   },
   "meta": {
-    "title": "RentVilla — Villa rentals in Azerbaijan",
+    "title": "VillaHub — Villa rentals in Azerbaijan",
     "description": "Find and rent premium villas across Azerbaijan"
   }
 }

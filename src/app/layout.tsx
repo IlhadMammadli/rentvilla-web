@@ -9,6 +9,7 @@ import { canListVillas } from "@/lib/roles";
 import { getLocale, getTranslations } from "@/i18n/server";
 import { getMessages } from "@/i18n/messages";
 import { I18nProvider } from "@/i18n/client";
+import { SITE_LOGO_PATH, SITE_NAME } from "@/lib/constants";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,6 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("meta.title"),
     description: t("meta.description"),
+    icons: {
+      icon: SITE_LOGO_PATH,
+      apple: SITE_LOGO_PATH,
+    },
+    applicationName: SITE_NAME,
   };
 }
 

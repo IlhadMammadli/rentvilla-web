@@ -1,4 +1,4 @@
-# RentVilla
+# VillaHub
 
 Villa rental platform for Azerbaijan — public listings, owner/realtor registration, villa uploads, and admin panel.
 

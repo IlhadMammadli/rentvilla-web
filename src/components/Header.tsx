@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Heart, LogIn, LogOut, Plus, UserPlus } from "lucide-react";
+import { BrandLogo } from "@/components/BrandLogo";
 import type { SessionUser } from "@/lib/auth";
 import { canAccessDashboard } from "@/lib/roles";
 import { useTranslations } from "@/i18n/client";
@@ -24,12 +25,7 @@ export function Header({ user, favoriteCount = 0, villaCount = 0 }: HeaderProps)
   return (
     <header className="sticky top-0 z-50 border-b border-gray-100 bg-white/90 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:h-16 sm:gap-4 sm:px-6 lg:px-8">
-        <Link
-          href="/"
-          className="min-w-0 shrink truncate text-lg font-semibold tracking-tight text-gray-900 sm:text-xl"
-        >
-          Rent<span className="text-gray-400">Villa</span>
-        </Link>
+        <BrandLogo href="/" variant="header" />
 
         <nav className="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-3">
           <LanguageSwitcher />

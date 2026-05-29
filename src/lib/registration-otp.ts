@@ -6,7 +6,9 @@ import { sendRegistrationOtpEmail } from "./email";
 import { UserRole } from "@prisma/client";
 
 const CODE_TTL_MS = 15 * 60 * 1000;
-const DEFAULT_LOGO = "/logo-default.svg";
+import { SITE_LOGO_PATH } from "@/lib/constants";
+
+const DEFAULT_LOGO = SITE_LOGO_PATH;
 
 export type PendingRegistration = {
   customerType: "villa_owner" | "realtor";
@@ -117,7 +119,7 @@ export async function sendRegistrationOtp(formData: FormData) {
       },
     });
   } catch (dbError) {
-    console.error("[RentVilla] RegistrationOtp DB error:", dbError);
+    console.error("[VillaHub] RegistrationOtp DB error:", dbError);
     return {
       error: "Registration verification is unavailable. Run prisma db push on production.",
       status: 503 as const,

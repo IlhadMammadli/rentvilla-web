@@ -4,6 +4,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { defaultPathForRole } from "@/lib/favorites";
+import { BrandLogo } from "@/components/BrandLogo";
 import { getTranslations } from "@/i18n/server";
 
 export default async function LoginPage() {
@@ -16,7 +17,8 @@ export default async function LoginPage() {
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:py-16">
-      <div className="mb-8 text-center">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <BrandLogo href="/" variant="full" className="mb-4" />
         <h1 className="text-2xl font-semibold text-gray-900">{t("auth.loginTitle")}</h1>
         <p className="mt-2 text-sm text-gray-500">{t("auth.loginSubtitle")}</p>
       </div>
