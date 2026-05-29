@@ -60,7 +60,10 @@
     "aframeFilter": "A-frame villalar",
     "openFilters": "Filtr",
     "closeFilters": "Filtrləri bağla",
-    "filtersTitle": "Axtarış və filtrlər"
+    "filtersTitle": "Axtarış və filtrlər",
+    "facilitiesDone": "Hazırdır",
+    "facilitiesClearAll": "Hamısını sil",
+    "facilitiesSelectedCount": "{count} seçildi"
   },
   "favorites": {
     "title": "Seçilmiş villalarım",

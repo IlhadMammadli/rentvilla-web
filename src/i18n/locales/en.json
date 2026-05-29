@@ -60,7 +60,10 @@
     "aframeFilter": "A-frame villas",
     "openFilters": "Filters",
     "closeFilters": "Close filters",
-    "filtersTitle": "Search & filters"
+    "filtersTitle": "Search & filters",
+    "facilitiesDone": "Done",
+    "facilitiesClearAll": "Clear all",
+    "facilitiesSelectedCount": "{count} selected"
   },
   "favorites": {
     "title": "My favorites",

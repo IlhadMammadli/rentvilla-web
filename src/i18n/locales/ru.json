@@ -60,7 +60,10 @@
     "aframeFilter": "A-frame виллы",
     "openFilters": "Фильтры",
     "closeFilters": "Закрыть фильтры",
-    "filtersTitle": "Поиск и фильтры"
+    "filtersTitle": "Поиск и фильтры",
+    "facilitiesDone": "Готово",
+    "facilitiesClearAll": "Сбросить все",
+    "facilitiesSelectedCount": "Выбрано: {count}"
   },
   "favorites": {
     "title": "Избранное",
