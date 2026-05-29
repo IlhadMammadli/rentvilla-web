@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MapPin, BedDouble, Users } from "lucide-react";
 import { getVillaById, formatPrice } from "@/lib/villa";
+import { getVillaRatingSummary } from "@/lib/villa-reviews";
 import { formatPostNumber } from "@/lib/post-number";
 import { getGalleryImageUrls } from "@/lib/images";
 import { getSessionUser } from "@/lib/auth";
@@ -11,6 +12,8 @@ import { VillaViewTracker } from "@/components/villa/VillaViewTracker";
 import { ContactRevealPanel } from "@/components/villa/ContactRevealPanel";
 import { VillaImageCarousel } from "@/components/villa/VillaImageCarousel";
 import { FavoriteButton } from "@/components/villa/FavoriteButton";
+import { VillaReviewsSection } from "@/components/villa/VillaReviewsSection";
+import { StarRating } from "@/components/villa/StarRating";
 
 export default async function VillaDetailPage({
   params,
@@ -28,6 +31,7 @@ export default async function VillaDetailPage({
   const favorited = user ? await isVillaFavorited(user.id, villa.id) : false;
 
   const images = getGalleryImageUrls(villa);
+  const ratingSummary = await getVillaRatingSummary(villa.id);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
@@ -50,7 +54,20 @@ export default async function VillaDetailPage({
       <div className="grid gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <h1 className="text-3xl font-semibold text-gray-900">{villa.title}</h1>
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-900">{villa.title}</h1>
+              {ratingSummary.count > 0 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <StarRating value={ratingSummary.average} size="md" />
+                  <span className="text-sm text-gray-600">
+                    {t("villa.reviewsSummary", {
+                      average: ratingSummary.average,
+                      count: ratingSummary.count,
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
             <FavoriteButton
               villaId={villa.id}
               initialFavorited={favorited}
@@ -114,6 +131,15 @@ export default async function VillaDetailPage({
 
         <ContactRevealPanel villaId={villa.id} contactName={villa.contactName} />
       </div>
+
+      <VillaReviewsSection
+        villaId={villa.id}
+        ownerUserId={villa.userId}
+        initialAverage={ratingSummary.average}
+        initialCount={ratingSummary.count}
+        isLoggedIn={Boolean(user)}
+        currentUserId={user?.id}
+      />
     </div>
   );
 }

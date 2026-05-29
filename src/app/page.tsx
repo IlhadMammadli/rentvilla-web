@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { VillaCard } from "@/components/VillaCard";
 import { HomeSearchSection } from "@/components/home/HomeSearchSection";
+import { VillaSection } from "@/components/home/VillaSection";
+import { VillaCard } from "@/components/VillaCard";
 import { PromotedRealtorCard } from "@/components/home/PromotedRealtorCard";
 import { AFrameFilter } from "@/components/home/AFrameFilter";
 import { getActiveCitiesWithDistricts, getActiveFacilities } from "@/lib/villa";
@@ -13,6 +14,7 @@ import {
   parseVillaSearchParams,
   hasSearchFilters,
 } from "@/lib/villa-search";
+import { getTopRatedVillas, getRatingMapForVillaIds, enrichVillasWithRatings } from "@/lib/villa-reviews";
 import { getLocale, getTranslations } from "@/i18n/server";
 
 type HomePageProps = {
@@ -35,9 +37,38 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     getActiveFacilities(),
   ]);
 
+  const cityName = filters.cityId
+    ? cities.find((c) => c.id === filters.cityId)?.name
+    : undefined;
+
   const promotedRealtors = searchFiltering ? [] : await getPromotedRealtors();
-  const promotedVillas = searchFiltering ? [] : await getPromotedVillas(filters);
-  const listings = await searchPublishedVillas(filters);
+  const promotedVillasRaw = searchFiltering ? [] : await getPromotedVillas(filters);
+  const topRatedRaw = searchFiltering
+    ? []
+    : await getTopRatedVillas(
+        filters.cityId ? { cityId: filters.cityId } : undefined,
+        12
+      );
+  const listingsRaw = await searchPublishedVillas(filters);
+
+  const allIds = [
+    ...promotedVillasRaw.map((v) => v.id),
+    ...topRatedRaw.map((v) => v.id),
+    ...listingsRaw.map((v) => v.id),
+  ];
+  const ratingMap = await getRatingMapForVillaIds([...new Set(allIds)]);
+
+  const promotedVillas = enrichVillasWithRatings(promotedVillasRaw, ratingMap);
+  const topRatedVillas = topRatedRaw.map((v) => ({
+    ...v,
+    avgRating: v.avgRating,
+    reviewCount: v.reviewCount,
+  }));
+  const listings = enrichVillasWithRatings(listingsRaw, ratingMap);
+
+  const topRatedTitle = cityName
+    ? t("home.topRatedCity", { city: cityName })
+    : t("home.topRatedAll");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -64,39 +95,42 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             {t("home.promotedRealtors")}
           </h2>
           <p className="mt-1 text-sm text-gray-500">{t("home.promotedRealtorsHint")}</p>
-          <div className="mt-4 flex gap-4 overflow-x-auto pb-2">
+          <div className="-mx-4 mt-4 flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scroll-smooth lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {promotedRealtors.map((realtor) => (
-              <PromotedRealtorCard
-                key={realtor.id}
-                userId={realtor.id}
-                companyName={realtor.realtorProfile!.companyName}
-                companyLogo={realtor.realtorProfile!.companyLogo}
-                listingCount={realtor._count.villas}
-                locale={locale}
-              />
+              <div key={realtor.id} className="w-[min(82vw,280px)] shrink-0 snap-start">
+                <PromotedRealtorCard
+                  userId={realtor.id}
+                  companyName={realtor.realtorProfile!.companyName}
+                  companyLogo={realtor.realtorProfile!.companyLogo}
+                  listingCount={realtor._count.villas}
+                  locale={locale}
+                />
+              </div>
             ))}
           </div>
         </section>
       )}
 
-      {!searchFiltering && promotedVillas.length > 0 && (
-        <section className="mt-10">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {t("home.promotedVillas")}
-          </h2>
-          <p className="mt-1 text-sm text-gray-500">{t("home.promotedVillasHint")}</p>
-          <div className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {promotedVillas.map((villa) => (
-              <VillaCard
-                key={`promoted-${villa.id}`}
-                villa={villa}
-                locale={locale}
-                isFavorited={favoriteSet.has(villa.id)}
-                isLoggedIn={Boolean(user)}
-              />
-            ))}
-          </div>
-        </section>
+      {!searchFiltering && (
+        <VillaSection
+          title={t("home.promotedVillas")}
+          hint={t("home.promotedVillasHint")}
+          villas={promotedVillas}
+          locale={locale}
+          favoriteIds={favoriteSet}
+          isLoggedIn={Boolean(user)}
+        />
+      )}
+
+      {!searchFiltering && topRatedVillas.length > 0 && (
+        <VillaSection
+          title={topRatedTitle}
+          hint={t("home.topRatedHint")}
+          villas={topRatedVillas}
+          locale={locale}
+          favoriteIds={favoriteSet}
+          isLoggedIn={Boolean(user)}
+        />
       )}
 
       <section className="mt-10">
@@ -122,17 +156,38 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             </p>
           </div>
         ) : (
-          <div className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {listings.map((villa) => (
-              <VillaCard
-                key={villa.id}
-                villa={villa}
-                locale={locale}
-                isFavorited={favoriteSet.has(villa.id)}
-                isLoggedIn={Boolean(user)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="-mx-4 mt-4 flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scroll-smooth lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {listings.map((villa) => (
+                <div
+                  key={villa.id}
+                  className="w-[min(82vw,300px)] shrink-0 snap-start snap-always"
+                >
+                  <VillaCard
+                    villa={villa}
+                    locale={locale}
+                    isFavorited={favoriteSet.has(villa.id)}
+                    isLoggedIn={Boolean(user)}
+                    avgRating={villa.avgRating}
+                    reviewCount={villa.reviewCount}
+                  />
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 hidden gap-8 lg:grid lg:grid-cols-3">
+              {listings.map((villa) => (
+                <VillaCard
+                  key={villa.id}
+                  villa={villa}
+                  locale={locale}
+                  isFavorited={favoriteSet.has(villa.id)}
+                  isLoggedIn={Boolean(user)}
+                  avgRating={villa.avgRating}
+                  reviewCount={villa.reviewCount}
+                />
+              ))}
+            </div>
+          </>
         )}
       </section>
     </div>

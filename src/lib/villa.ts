@@ -22,6 +22,7 @@ const detailInclude = {
   district: true,
   images: { orderBy: { sortOrder: "asc" as const } },
   facilities: { include: { facility: true } },
+  user: { select: { id: true } },
 };
 
 export async function getPublishedVillas() {

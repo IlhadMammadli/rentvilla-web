@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { getTopRatedVillasAdmin } from "./villa-reviews";
 
 function startOfDay(d: Date) {
   const x = new Date(d);
@@ -119,6 +120,8 @@ export async function getAdminAnalytics() {
     .sort((a, b) => b.views - a.views)
     .slice(0, 20);
 
+  const topRatedVillas = await getTopRatedVillasAdmin(20);
+
   const viewsByDay = aggregateByDay(allViews.map((v) => v.createdAt));
   const viewsByMonth = aggregateByMonth(allViews.map((v) => v.createdAt));
   const contactsByDay = aggregateByDay(allContacts.map((c) => c.createdAt));
@@ -160,6 +163,15 @@ export async function getAdminAnalytics() {
       isPublished: v.isPublished,
       favorites: v._count.favorites,
       views: v._count.views,
+      ownerName: getOwnerName(v.user),
+    })),
+    topRatedVillas: topRatedVillas.map((v) => ({
+      id: v.id,
+      title: v.title,
+      city: v.city.name,
+      isPublished: v.isPublished,
+      avgRating: v.avgRating,
+      reviewCount: v.reviewCount,
       ownerName: getOwnerName(v.user),
     })),
     topOwners: ownerRankings,

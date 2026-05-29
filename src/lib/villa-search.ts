@@ -15,7 +15,7 @@ const publishedWhere = {
   user: { isBlocked: false },
 };
 
-const villaInclude = {
+export const villaInclude = {
   city: true,
   district: true,
   images: { orderBy: { sortOrder: "asc" as const } },
@@ -28,7 +28,7 @@ const villaInclude = {
   },
 };
 
-function buildWhere(filters?: VillaSearchFilters) {
+export function buildWhere(filters?: VillaSearchFilters) {
   const facilityIds =
     filters?.facilityIds?.filter(Boolean) ?? [];
 

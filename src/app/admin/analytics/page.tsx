@@ -93,6 +93,24 @@ export default async function AdminAnalyticsPage() {
 
       <section>
         <h2 className="text-lg font-medium text-gray-900">
+          {t("admin.topRatedVillas")} (20)
+        </h2>
+        <RankingTable
+          items={data.topRatedVillas.map((v) => ({
+            id: v.id,
+            title: v.title,
+            meta: `${v.city} · ${v.ownerName}`,
+            primary: v.avgRating,
+            secondary: v.reviewCount,
+          }))}
+          primaryLabel={t("villa.ratingLabel")}
+          secondaryLabel={t("villa.reviewCountLabel")}
+          t={t}
+        />
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium text-gray-900">
           {t("admin.topFavoriteVillas")} (50)
         </h2>
         <RankingTable

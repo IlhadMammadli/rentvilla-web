@@ -63,7 +63,10 @@
     "filtersTitle": "Search & filters",
     "facilitiesDone": "Done",
     "facilitiesClearAll": "Clear all",
-    "facilitiesSelectedCount": "{count} selected"
+    "facilitiesSelectedCount": "{count} selected",
+    "topRatedAll": "Top rated villas",
+    "topRatedCity": "Top rated in {city}",
+    "topRatedHint": "Based on guest star ratings and reviews"
   },
   "favorites": {
     "title": "My favorites",
@@ -158,7 +161,21 @@
     "galleryPhotos": "Gallery photos",
     "galleryPhotosHint": "Optional. Shown as a carousel on the villa detail page (up to 12).",
     "galleryCount": "{count} photo(s) selected",
-    "postNumber": "Post number is"
+    "postNumber": "Post number is",
+    "reviewsTitle": "Reviews & ratings",
+    "reviewsSummary": "{average} · {count} reviews",
+    "reviewsEmpty": "No reviews yet",
+    "reviewFormTitle": "Leave a review",
+    "reviewRatingLabel": "Your rating",
+    "reviewCommentLabel": "Comment (optional)",
+    "reviewCommentPlaceholder": "Share your experience…",
+    "reviewSubmit": "Submit review",
+    "reviewSubmitting": "Submitting…",
+    "reviewSubmitted": "Thank you! Your review was saved.",
+    "reviewLoginRequired": "Sign in to leave a rating and comment.",
+    "reviewOwnerCannot": "You cannot review your own listing.",
+    "ratingLabel": "Rating",
+    "reviewCountLabel": "Reviews"
   },
   "dashboard": {
     "title": "Owner dashboard",
@@ -180,6 +197,7 @@
     "mostContacted": "Most contacted",
     "mostFavorited": "Most favorited",
     "topPerformer": "Top performer",
+    "topRatedVillas": "Your highest rated villas",
     "views": "Views",
     "contacts": "Contacts",
     "conversion": "Conversion",
@@ -276,6 +294,7 @@
     "totalContacts": "Total contact reveals",
     "totalFavorites": "Total favorites saved",
     "topFavoriteVillas": "Most favorited villas",
+    "topRatedVillas": "Top rated villas",
     "viewsToday": "Views today",
     "viewsThisMonth": "This month: {n}",
     "contactsToday": "Contacts today",

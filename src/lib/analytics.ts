@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { getTopRatedVillasForOwner } from "./villa-reviews";
 
 const sevenDaysAgo = () => {
   const d = new Date();
@@ -83,6 +84,8 @@ export async function getOwnerDashboardStats(userId: string) {
       (a, b) => b.contacts * 2 + b.views - (a.contacts * 2 + a.views)
     )[0] ?? null;
 
+  const topRated = await getTopRatedVillasForOwner(userId, 5);
+
   return {
     totalListings: villas.length,
     totalViews,
@@ -95,6 +98,13 @@ export async function getOwnerDashboardStats(userId: string) {
     mostContacted,
     mostFavorited,
     topPerformer,
+    topRated: topRated.map((v) => ({
+      id: v.id,
+      title: v.title,
+      cityName: v.city.name,
+      avgRating: v.avgRating,
+      reviewCount: v.reviewCount,
+    })),
     villas: villasWithStats,
   };
 }

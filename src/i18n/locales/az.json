@@ -63,7 +63,10 @@
     "filtersTitle": "Axtarış və filtrlər",
     "facilitiesDone": "Hazırdır",
     "facilitiesClearAll": "Hamısını sil",
-    "facilitiesSelectedCount": "{count} seçildi"
+    "facilitiesSelectedCount": "{count} seçildi",
+    "topRatedAll": "Ən yüksək reytinqli villalar",
+    "topRatedCity": "{city} üzrə ən yüksək reytinq",
+    "topRatedHint": "Qonaqların ulduz reytinqi və rəylərinə əsasən"
   },
   "favorites": {
     "title": "Seçilmiş villalarım",
@@ -158,7 +161,21 @@
     "galleryPhotos": "Qalereya şəkilləri",
     "galleryPhotosHint": "İstəyə bağlı. Villa səhifəsində karusel kimi (ən çoxu 12).",
     "galleryCount": "{count} şəkil seçildi",
-    "postNumber": "Elan nömrəsi"
+    "postNumber": "Elan nömrəsi",
+    "reviewsTitle": "Rəylər və reytinq",
+    "reviewsSummary": "{average} · {count} rəy",
+    "reviewsEmpty": "Hələ rəy yoxdur",
+    "reviewFormTitle": "Rəy yazın",
+    "reviewRatingLabel": "Reytinqiniz",
+    "reviewCommentLabel": "Şərh (istəyə bağlı)",
+    "reviewCommentPlaceholder": "Təcrübənizi paylaşın…",
+    "reviewSubmit": "Rəyi göndər",
+    "reviewSubmitting": "Göndərilir…",
+    "reviewSubmitted": "Təşəkkürlər! Rəyiniz saxlanıldı.",
+    "reviewLoginRequired": "Reytinq və rəy üçün daxil olun.",
+    "reviewOwnerCannot": "Öz elanınıza rəy yaza bilməzsiniz.",
+    "ratingLabel": "Reytinq",
+    "reviewCountLabel": "Rəylər"
   },
   "dashboard": {
     "title": "Sahib paneli",
@@ -180,6 +197,7 @@
     "mostContacted": "Ən çox əlaqə",
     "mostFavorited": "Ən çox seçilmiş",
     "topPerformer": "Ən yaxşı elan",
+    "topRatedVillas": "Ən yüksək reytinqli villalarınız",
     "views": "Baxış",
     "contacts": "Əlaqə",
     "conversion": "Konversiya",
@@ -276,6 +294,7 @@
     "totalContacts": "Ümumi əlaqə göstərilməsi",
     "totalFavorites": "Ümumi seçilmiş",
     "topFavoriteVillas": "Ən çox seçilmiş villalar",
+    "topRatedVillas": "Ən yüksək reytinqli villalar",
     "viewsToday": "Bu gün baxış",
     "viewsThisMonth": "Bu ay: {n}",
     "contactsToday": "Bu gün əlaqə",

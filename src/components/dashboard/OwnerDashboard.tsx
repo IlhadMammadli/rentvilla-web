@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Phone, TrendingUp, Home, BarChart3, Heart } from "lucide-react";
+import { Eye, Phone, TrendingUp, Home, BarChart3, Heart, Star } from "lucide-react";
 import { useTranslations } from "@/i18n/client";
 import { LabelWithInfo } from "@/components/dashboard/DashboardLabels";
 import { formatPrice } from "@/lib/villa";
@@ -20,6 +20,13 @@ export type DashboardStats = {
   mostContacted: { title: string; contacts: number } | null;
   mostFavorited: { title: string; favorites: number } | null;
   topPerformer: { title: string; views: number; conversion: number } | null;
+  topRated: {
+    id: string;
+    title: string;
+    cityName: string;
+    avgRating: number;
+    reviewCount: number;
+  }[];
   villas: {
     id: string;
     title: string;
@@ -189,6 +196,33 @@ export function OwnerDashboard({
             empty={t("dashboard.noDataYet")}
           />
         </div>
+
+        {stats.topRated.length > 0 && (
+          <div className="mt-6 rounded-xl border border-amber-100 bg-amber-50/40 p-5">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-900">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              {t("dashboard.topRatedVillas")}
+            </h3>
+            <ul className="mt-3 space-y-2">
+              {stats.topRated.map((v) => (
+                <li key={v.id}>
+                  <Link
+                    href={`/villas/${v.id}`}
+                    className="flex items-center justify-between gap-2 rounded-lg bg-white/80 px-3 py-2 text-sm hover:bg-white"
+                  >
+                    <span className="min-w-0 truncate font-medium text-gray-900">
+                      {v.title}
+                      <span className="ml-1 font-normal text-gray-500">· {v.cityName}</span>
+                    </span>
+                    <span className="shrink-0 text-amber-800">
+                      {v.avgRating.toFixed(1)} ★ ({v.reviewCount})
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       <section>

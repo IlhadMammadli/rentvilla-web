@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BedDouble, MapPin, Users } from "lucide-react";
+import { BedDouble, MapPin, Star, Users } from "lucide-react";
 import { formatPrice } from "@/lib/villa";
 import { getMainImageUrl, type VillaWithImages } from "@/lib/images";
 import { FavoriteButton } from "@/components/villa/FavoriteButton";
@@ -27,11 +27,15 @@ export function VillaCard({
   locale,
   isFavorited = false,
   isLoggedIn = false,
+  avgRating = 0,
+  reviewCount = 0,
 }: {
   villa: VillaCardData;
   locale: Locale;
   isFavorited?: boolean;
   isLoggedIn?: boolean;
+  avgRating?: number;
+  reviewCount?: number;
 }) {
   const m = getMessages(locale);
   const imageSrc = getMainImageUrl(villa);
@@ -48,6 +52,14 @@ export function VillaCard({
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </Link>
+
+        {reviewCount > 0 && (
+          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1 rounded-full bg-white/95 px-2 py-1 text-xs font-medium text-gray-900 shadow-sm backdrop-blur-sm">
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+            {avgRating.toFixed(1)}
+            <span className="text-gray-500">({reviewCount})</span>
+          </div>
+        )}
 
         <div className="absolute left-3 top-3 z-10 flex flex-wrap gap-1.5">
           {villa.isPromoted && (
