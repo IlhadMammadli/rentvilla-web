@@ -1,4 +1,5 @@
 import { prisma } from "./prisma";
+import { syncExpiredPromotions } from "./promotions";
 
 export type VillaSearchFilters = {
   cityId?: string;
@@ -14,6 +15,26 @@ const publishedWhere = {
   isPublished: true,
   user: { isBlocked: false },
 };
+
+function activeVillaPromotionWhere() {
+  const now = new Date();
+  return {
+    OR: [
+      { promotedUntil: { gt: now } },
+      { isPromoted: true, promotedUntil: null },
+    ],
+  };
+}
+
+function activeRealtorPromotionWhere() {
+  const now = new Date();
+  return {
+    OR: [
+      { isPromoted: true, promotedUntil: { gt: now } },
+      { isPromoted: true, promotedUntil: null },
+    ],
+  };
+}
 
 export const villaInclude = {
   city: true,
@@ -51,10 +72,12 @@ export function buildWhere(filters?: VillaSearchFilters) {
 }
 
 export async function searchPublishedVillas(filters?: VillaSearchFilters) {
+  await syncExpiredPromotions();
+
   return prisma.villa.findMany({
     where: buildWhere(filters),
     include: villaInclude,
-    orderBy: [{ isPromoted: "desc" }, { createdAt: "desc" }],
+    orderBy: [{ promotedUntil: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
   });
 }
 
@@ -63,27 +86,37 @@ export async function getAllPublishedVillas(filters?: VillaSearchFilters) {
 }
 
 export async function getPromotedVillas(filters?: VillaSearchFilters) {
+  await syncExpiredPromotions();
+
   return prisma.villa.findMany({
-    where: { ...buildWhere(filters), isPromoted: true },
+    where: { ...buildWhere(filters), ...activeVillaPromotionWhere() },
     include: villaInclude,
-    orderBy: { createdAt: "desc" },
+    orderBy: { promotedUntil: "desc" },
   });
 }
 
 export async function getRegularVillas(filters?: VillaSearchFilters) {
+  await syncExpiredPromotions();
+
+  const now = new Date();
   return prisma.villa.findMany({
-    where: { ...buildWhere(filters), isPromoted: false },
+    where: {
+      ...buildWhere(filters),
+      OR: [{ promotedUntil: null }, { promotedUntil: { lte: now } }],
+    },
     include: villaInclude,
     orderBy: { createdAt: "desc" },
   });
 }
 
 export async function getPromotedRealtors() {
+  await syncExpiredPromotions();
+
   return prisma.user.findMany({
     where: {
       isBlocked: false,
       role: "REALTOR",
-      realtorProfile: { isPromoted: true },
+      realtorProfile: activeRealtorPromotionWhere(),
     },
     include: {
       realtorProfile: true,
@@ -95,6 +128,43 @@ export async function getPromotedRealtors() {
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export type PromotedRealtorWithHighlights = Awaited<
+  ReturnType<typeof getPromotedRealtorsWithHighlights>
+>[number];
+
+export async function getPromotedRealtorsWithHighlights() {
+  await syncExpiredPromotions();
+
+  const realtors = await prisma.user.findMany({
+    where: {
+      isBlocked: false,
+      role: "REALTOR",
+      realtorProfile: activeRealtorPromotionWhere(),
+    },
+    include: {
+      realtorProfile: true,
+      _count: {
+        select: { villas: { where: publishedWhere } },
+      },
+      villas: {
+        where: {
+          ...publishedWhere,
+          highlightInProfile: true,
+        },
+        include: {
+          city: true,
+          images: { orderBy: { sortOrder: "asc" }, take: 1 },
+        },
+        take: 3,
+        orderBy: { createdAt: "desc" },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return realtors;
 }
 
 export function parseVillaSearchParams(

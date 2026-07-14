@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, LogIn, LogOut, Plus, UserPlus } from "lucide-react";
+import { Heart, LogIn, LogOut, Plus, User, UserPlus } from "lucide-react";
 import { BrandLogo } from "@/components/BrandLogo";
 import type { SessionUser } from "@/lib/auth";
 import { canAccessDashboard } from "@/lib/roles";
@@ -83,9 +83,16 @@ export function Header({ user, favoriteCount = 0, villaCount = 0 }: HeaderProps)
                     </span>
                   </Link>
                 ))}
-              <span className="hidden max-w-[120px] truncate text-sm text-gray-500 lg:inline">
-                {user.displayName}
-              </span>
+              <Link
+                href="/profile"
+                className={navActionClass("text-gray-600 hover:bg-gray-50 hover:text-gray-900")}
+                aria-label={t("nav.myAccount")}
+              >
+                <User className="h-[18px] w-[18px] sm:h-4 sm:w-4" strokeWidth={1.75} />
+                <span className="hidden max-w-[120px] truncate text-sm lg:inline">
+                  {user.displayName}
+                </span>
+              </Link>
               <form action="/api/auth/logout" method="POST" className="shrink-0">
                 <button
                   type="submit"

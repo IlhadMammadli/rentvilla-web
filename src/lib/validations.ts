@@ -28,3 +28,20 @@ export const loginSchema = z.object({
   phone: z.string().optional(),
   password: z.string().min(1, "Password is required"),
 });
+
+export const updateProfileSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  phone: z.string().min(9, "Valid phone number is required"),
+  currentPassword: z.string().min(1, "Current password is required"),
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Password must be at least 8 characters"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });

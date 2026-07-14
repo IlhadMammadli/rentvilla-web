@@ -20,6 +20,26 @@ enum PricePeriod {
   MONTHLY
 }
 
+enum PromotionType {
+  VILLA
+  PROFILE
+}
+
+enum PromotionTier {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum PromotionStatus {
+  PENDING
+  PAID
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  FAILED
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String?  @unique
@@ -36,6 +56,7 @@ model User {
   villas            Villa[]
   favorites         VillaFavorite[]
   villaReviews      VillaReview[]
+  promotions        Promotion[]
 }
 
 model GuestProfile {
@@ -64,7 +85,8 @@ model RealtorProfile {
   companyName String
   companyLogo String?
   phone       String
-  isPromoted  Boolean @default(false)
+  isPromoted  Boolean   @default(false)
+  promotedUntil DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -123,10 +145,12 @@ model Villa {
   address       String?
   isPublished   Boolean     @default(true)
   isPreview     Boolean     @default(false)
-  isPromoted    Boolean     @default(false)
-  isAFrame      Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  isPromoted         Boolean     @default(false)
+  promotedUntil      DateTime?
+  highlightInProfile Boolean     @default(false)
+  isAFrame           Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
   user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   city            City                 @relation(fields: [cityId], references: [id])
@@ -137,6 +161,7 @@ model Villa {
   contactReveals  VillaContactReveal[]
   favorites       VillaFavorite[]
   reviews         VillaReview[]
+  promotions      Promotion[]
 }
 
 model VillaReview {
@@ -236,4 +261,30 @@ model VillaFacility {
   facility Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
 
   @@id([villaId, facilityId])
+}
+
+model Promotion {
+  id                  String          @id @default(cuid())
+  userId              String
+  type                PromotionType
+  tier                PromotionTier
+  status              PromotionStatus @default(PENDING)
+  amount              Float
+  currency            String          @default("AZN")
+  villaId             String?
+  highlightedVillaIds String?
+  payriffOrderId      String?         @unique
+  payriffPaymentUrl   String?
+  startsAt            DateTime?
+  endsAt              DateTime?
+  paidAt              DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  villa Villa? @relation(fields: [villaId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
+  @@index([villaId])
 }

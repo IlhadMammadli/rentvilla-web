@@ -10,7 +10,7 @@ import { getUserFavoriteVillaIds } from "@/lib/favorites";
 import {
   searchPublishedVillas,
   getPromotedVillas,
-  getPromotedRealtors,
+  getPromotedRealtorsWithHighlights,
   parseVillaSearchParams,
   hasSearchFilters,
 } from "@/lib/villa-search";
@@ -41,7 +41,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     ? cities.find((c) => c.id === filters.cityId)?.name
     : undefined;
 
-  const promotedRealtors = searchFiltering ? [] : await getPromotedRealtors();
+  const promotedRealtors = searchFiltering ? [] : await getPromotedRealtorsWithHighlights();
   const promotedVillasRaw = searchFiltering ? [] : await getPromotedVillas(filters);
   const topRatedRaw = searchFiltering
     ? []
@@ -97,13 +97,21 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           <p className="mt-1 text-sm text-gray-500">{t("home.promotedRealtorsHint")}</p>
           <div className="-mx-4 mt-4 flex gap-4 overflow-x-auto px-4 pb-2 snap-x snap-mandatory scroll-smooth lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {promotedRealtors.map((realtor) => (
-              <div key={realtor.id} className="w-[min(82vw,280px)] shrink-0 snap-start">
+              <div key={realtor.id} className="snap-start">
                 <PromotedRealtorCard
                   userId={realtor.id}
                   companyName={realtor.realtorProfile!.companyName}
                   companyLogo={realtor.realtorProfile!.companyLogo}
                   listingCount={realtor._count.villas}
                   locale={locale}
+                  highlightedVillas={realtor.villas.map((v) => ({
+                    id: v.id,
+                    title: v.title,
+                    price: v.price,
+                    pricePeriod: v.pricePeriod,
+                    imageUrl: v.images[0]?.url ?? v.imageUrl,
+                    cityName: v.city.name,
+                  }))}
                 />
               </div>
             ))}
