@@ -31,6 +31,11 @@ enum PromotionTier {
   MONTHLY
 }
 
+enum PromotionLevel {
+  STANDARD
+  VIP
+}
+
 enum PromotionStatus {
   PENDING
   PAID
@@ -147,6 +152,7 @@ model Villa {
   isPreview     Boolean     @default(false)
   isPromoted         Boolean     @default(false)
   promotedUntil      DateTime?
+  promotionLevel     PromotionLevel?
   highlightInProfile Boolean     @default(false)
   isAFrame           Boolean     @default(false)
   createdAt         DateTime    @default(now())
@@ -268,6 +274,7 @@ model Promotion {
   userId              String
   type                PromotionType
   tier                PromotionTier
+  level               PromotionLevel  @default(STANDARD)
   status              PromotionStatus @default(PENDING)
   amount              Float
   currency            String          @default("AZN")
@@ -287,4 +294,5 @@ model Promotion {
   @@index([userId])
   @@index([status])
   @@index([villaId])
+  @@index([level])
 }

@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/auth";
 import { canListVillas } from "@/lib/roles";
 import { createPromotionOrder } from "@/lib/promotions";
-import { PromotionTier, PromotionType } from "@prisma/client";
+import { PromotionLevel, PromotionTier, PromotionType } from "@prisma/client";
 import { z } from "zod";
 
 const createSchema = z.object({
   type: z.enum(["VILLA", "PROFILE"]),
   tier: z.enum(["DAILY", "WEEKLY", "MONTHLY"]),
+  level: z.enum(["STANDARD", "VIP"]).optional(),
   villaId: z.string().optional(),
   highlightedVillaIds: z.array(z.string()).optional(),
   language: z.enum(["AZ", "EN", "RU"]).optional(),
@@ -34,6 +35,7 @@ export async function POST(request: NextRequest) {
       userRole: session.role,
       type: parsed.data.type as PromotionType,
       tier: parsed.data.tier as PromotionTier,
+      level: (parsed.data.level as PromotionLevel | undefined) ?? PromotionLevel.STANDARD,
       villaId: parsed.data.villaId,
       highlightedVillaIds: parsed.data.highlightedVillaIds,
       language: parsed.data.language,

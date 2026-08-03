@@ -1,5 +1,6 @@
 import { prisma } from "./prisma";
 import { syncExpiredPromotions } from "./promotions";
+import { PromotionLevel } from "@prisma/client";
 
 export type VillaSearchFilters = {
   cityId?: string;
@@ -85,11 +86,59 @@ export async function getAllPublishedVillas(filters?: VillaSearchFilters) {
   return searchPublishedVillas(filters);
 }
 
+/** All active promoted villas (legacy / admin-toggled included). */
 export async function getPromotedVillas(filters?: VillaSearchFilters) {
   await syncExpiredPromotions();
 
   return prisma.villa.findMany({
     where: { ...buildWhere(filters), ...activeVillaPromotionWhere() },
+    include: villaInclude,
+    orderBy: { promotedUntil: "desc" },
+  });
+}
+
+/** VIP — always shown on the home page for every visitor. */
+export async function getVipPromotedVillas() {
+  await syncExpiredPromotions();
+
+  return prisma.villa.findMany({
+    where: {
+      ...publishedWhere,
+      ...activeVillaPromotionWhere(),
+      promotionLevel: PromotionLevel.VIP,
+    },
+    include: villaInclude,
+    orderBy: { promotedUntil: "desc" },
+  });
+}
+
+/**
+ * STANDARD — shown in a city segment when guests search that city.
+ * Also includes legacy isPromoted without a level (treated as standard for city filter).
+ */
+export async function getStandardPromotedVillasForCity(cityId: string) {
+  await syncExpiredPromotions();
+  const now = new Date();
+
+  return prisma.villa.findMany({
+    where: {
+      ...publishedWhere,
+      cityId,
+      AND: [
+        {
+          OR: [
+            { promotedUntil: { gt: now } },
+            { isPromoted: true, promotedUntil: null },
+          ],
+        },
+        {
+          OR: [
+            { promotionLevel: PromotionLevel.STANDARD },
+            { promotionLevel: null },
+          ],
+        },
+      ],
+    },
     include: villaInclude,
     orderBy: { promotedUntil: "desc" },
   });

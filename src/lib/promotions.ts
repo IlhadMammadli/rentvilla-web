@@ -1,4 +1,5 @@
 import {
+  PromotionLevel,
   PromotionStatus,
   PromotionTier,
   PromotionType,
@@ -8,9 +9,14 @@ import { prisma } from "./prisma";
 import { PROMOTION_PRICES, PROMOTION_TIER_DAYS, MAX_HIGHLIGHT_VILLAS } from "./constants";
 import { createPayriffOrder, getPayriffOrder, getSiteBaseUrl, isPayriffOrderPaid } from "./payriff";
 
-export function getPromotionPrice(type: PromotionType, tier: PromotionTier) {
-  const key = type === "VILLA" ? "VILLA" : "PROFILE";
-  return PROMOTION_PRICES[key][tier];
+export function getPromotionPrice(
+  type: PromotionType,
+  tier: PromotionTier,
+  level: PromotionLevel = PromotionLevel.STANDARD
+) {
+  const typeKey = type === "VILLA" ? "VILLA" : "PROFILE";
+  const levelKey = level === "VIP" ? "VIP" : "STANDARD";
+  return PROMOTION_PRICES[typeKey][levelKey][tier];
 }
 
 export function getTierDurationDays(tier: PromotionTier) {
@@ -38,7 +44,7 @@ export async function syncExpiredPromotions() {
 
   await prisma.villa.updateMany({
     where: { promotedUntil: { lte: now } },
-    data: { isPromoted: false, highlightInProfile: false },
+    data: { isPromoted: false, highlightInProfile: false, promotionLevel: null },
   });
 
   await prisma.realtorProfile.updateMany({
@@ -88,6 +94,7 @@ type CreatePromotionInput = {
   userRole: UserRole;
   type: PromotionType;
   tier: PromotionTier;
+  level?: PromotionLevel;
   villaId?: string;
   highlightedVillaIds?: string[];
   language?: "AZ" | "EN" | "RU";
@@ -95,6 +102,10 @@ type CreatePromotionInput = {
 
 export async function createPromotionOrder(input: CreatePromotionInput) {
   const { userId, userRole, type, tier } = input;
+  const level =
+    type === PromotionType.PROFILE
+      ? PromotionLevel.VIP
+      : (input.level ?? PromotionLevel.STANDARD);
 
   if (type === "PROFILE" && userRole !== "REALTOR") {
     return { error: "Only realtors can promote their company profile", status: 400 as const };
@@ -104,7 +115,7 @@ export async function createPromotionOrder(input: CreatePromotionInput) {
     return { error: "Your account cannot purchase promotions", status: 403 as const };
   }
 
-  const amount = getPromotionPrice(type, tier);
+  const amount = getPromotionPrice(type, tier, level);
   if (amount <= 0) {
     return { error: "Invalid promotion price", status: 400 as const };
   }
@@ -153,6 +164,7 @@ export async function createPromotionOrder(input: CreatePromotionInput) {
       userId,
       type,
       tier,
+      level,
       amount,
       currency: "AZN",
       status: PromotionStatus.PENDING,
@@ -163,10 +175,11 @@ export async function createPromotionOrder(input: CreatePromotionInput) {
   });
 
   const baseUrl = getSiteBaseUrl();
-  const callbackUrl = `${baseUrl}/api/promotions/callback`;
+  // Embed promotionId so Payriff return/callback can always find the order.
+  const callbackUrl = `${baseUrl}/api/promotions/callback?promotionId=${encodeURIComponent(promotion.id)}`;
   const description =
     type === "VILLA"
-      ? `VillaHub villa promotion (${tier.toLowerCase()})`
+      ? `VillaHub ${level.toLowerCase()} villa promotion (${tier.toLowerCase()})`
       : `VillaHub realtor profile promotion (${tier.toLowerCase()})`;
 
   const payriff = await createPayriffOrder({
@@ -179,6 +192,7 @@ export async function createPromotionOrder(input: CreatePromotionInput) {
       userId,
       type,
       tier,
+      level,
     },
   });
 
@@ -216,24 +230,29 @@ export async function activatePromotion(promotionId: string) {
     return { error: "Promotion not found", status: 404 as const };
   }
 
-  if (promotion.status === PromotionStatus.ACTIVE || promotion.status === PromotionStatus.PAID) {
-    return { success: true as const, alreadyActive: true };
+  if (promotion.status === PromotionStatus.ACTIVE) {
+    return { success: true as const, alreadyActive: true, promotionId: promotion.id };
   }
 
-  if (promotion.status !== PromotionStatus.PENDING) {
+  if (
+    promotion.status !== PromotionStatus.PENDING &&
+    promotion.status !== PromotionStatus.PAID
+  ) {
     return { error: "Promotion cannot be activated", status: 400 as const };
   }
 
   const now = new Date();
   let startsAt = now;
   let endsAt = computePromotionEnd(now, promotion.tier);
+  const level = promotion.level ?? PromotionLevel.STANDARD;
 
   if (promotion.type === PromotionType.VILLA && promotion.villaId) {
     const villa = await prisma.villa.findUnique({
       where: { id: promotion.villaId },
-      select: { promotedUntil: true },
+      select: { promotedUntil: true, promotionLevel: true },
     });
 
+    // Extend from current end if already promoted at same or higher priority
     if (villa?.promotedUntil && villa.promotedUntil > now) {
       startsAt = villa.promotedUntil;
       endsAt = computePromotionEnd(startsAt, promotion.tier);
@@ -241,7 +260,11 @@ export async function activatePromotion(promotionId: string) {
 
     await prisma.villa.update({
       where: { id: promotion.villaId },
-      data: { isPromoted: true, promotedUntil: endsAt },
+      data: {
+        isPromoted: true,
+        promotedUntil: endsAt,
+        promotionLevel: level,
+      },
     });
   }
 
@@ -286,7 +309,7 @@ export async function activatePromotion(promotionId: string) {
     },
   });
 
-  return { success: true as const };
+  return { success: true as const, promotionId: promotion.id };
 }
 
 export async function verifyAndActivatePromotion(promotionId: string) {
@@ -310,11 +333,16 @@ export async function verifyAndActivatePromotion(promotionId: string) {
   }
 
   if (!isPayriffOrderPaid(orderResult.order.paymentStatus)) {
-    await prisma.promotion.update({
-      where: { id: promotionId },
-      data: { status: PromotionStatus.FAILED },
-    });
-    return { error: "Payment not completed", status: 402 as const };
+    // Keep PENDING if still unpaid (user may still be on payment page);
+    // only mark FAILED when clearly declined/cancelled.
+    const status = String(orderResult.order.paymentStatus || "").toUpperCase();
+    if (["DECLINED", "CANCELED", "CANCELLED", "EXPIRED", "FAILED"].includes(status)) {
+      await prisma.promotion.update({
+        where: { id: promotionId },
+        data: { status: PromotionStatus.FAILED },
+      });
+    }
+    return { error: "Payment not completed", status: 402 as const, paymentStatus: status };
   }
 
   const activated = await activatePromotion(promotionId);
@@ -323,23 +351,30 @@ export async function verifyAndActivatePromotion(promotionId: string) {
 }
 
 export async function handlePayriffCallback(body: Record<string, unknown>) {
+  const metadata =
+    body.metadata && typeof body.metadata === "object"
+      ? (body.metadata as Record<string, string>)
+      : undefined;
+
   const promotionId =
-    (body.promotionId as string) ||
-    ((body.metadata as Record<string, string> | undefined)?.promotionId ?? "");
+    (typeof body.promotionId === "string" && body.promotionId) ||
+    metadata?.promotionId ||
+    "";
 
   const orderId =
-    (body.orderId as string) ||
-    (body.orderID as string) ||
-    ((body.payload as Record<string, string> | undefined)?.orderId ?? "");
+    (typeof body.orderId === "string" && body.orderId) ||
+    (typeof body.orderID === "string" && body.orderID) ||
+    (typeof (body.payload as { orderId?: string } | undefined)?.orderId === "string"
+      ? (body.payload as { orderId: string }).orderId
+      : "") ||
+    "";
 
   let promotion = promotionId
     ? await prisma.promotion.findUnique({ where: { id: promotionId } })
-    : orderId
-      ? await prisma.promotion.findUnique({ where: { payriffOrderId: orderId } })
-      : null;
+    : null;
 
   if (!promotion && orderId) {
-    promotion = await prisma.promotion.findFirst({ where: { payriffOrderId: orderId } });
+    promotion = await prisma.promotion.findUnique({ where: { payriffOrderId: orderId } });
   }
 
   if (!promotion) {

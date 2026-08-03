@@ -1,12 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Megaphone, Building2, Home, Check } from "lucide-react";
+import { Megaphone, Building2, Home, Check, Crown, MapPin } from "lucide-react";
 import { useTranslations } from "@/i18n/client";
 import { PROMOTION_PRICES, MAX_HIGHLIGHT_VILLAS } from "@/lib/constants";
-import type { PromotionTier, PromotionType } from "@prisma/client";
+import type { PromotionLevel, PromotionTier, PromotionType } from "@prisma/client";
 
 type VillaOption = {
   id: string;
@@ -25,9 +24,9 @@ const TIERS: PromotionTier[] = ["DAILY", "WEEKLY", "MONTHLY"];
 
 export function PromoteForm({ villas, isRealtor }: PromoteFormProps) {
   const t = useTranslations();
-  const router = useRouter();
 
   const [promoType, setPromoType] = useState<PromotionType>("VILLA");
+  const [level, setLevel] = useState<PromotionLevel>("STANDARD");
   const [tier, setTier] = useState<PromotionTier>("WEEKLY");
   const [selectedVillaId, setSelectedVillaId] = useState(villas[0]?.id ?? "");
   const [highlightIds, setHighlightIds] = useState<string[]>([]);
@@ -42,9 +41,10 @@ export function PromoteForm({ villas, isRealtor }: PromoteFormProps) {
     });
   }
 
-  function priceFor(type: PromotionType, tierKey: PromotionTier) {
-    const key = type === "VILLA" ? "VILLA" : "PROFILE";
-    return PROMOTION_PRICES[key][tierKey];
+  function priceFor(type: PromotionType, tierKey: PromotionTier, lvl: PromotionLevel) {
+    const typeKey = type === "VILLA" ? "VILLA" : "PROFILE";
+    const levelKey = lvl === "VIP" ? "VIP" : "STANDARD";
+    return PROMOTION_PRICES[typeKey][levelKey][tierKey];
   }
 
   async function handlePay() {
@@ -52,7 +52,12 @@ export function PromoteForm({ villas, isRealtor }: PromoteFormProps) {
     setError("");
 
     try {
-      const body: Record<string, unknown> = { type: promoType, tier };
+      const effectiveLevel = promoType === "PROFILE" ? "VIP" : level;
+      const body: Record<string, unknown> = {
+        type: promoType,
+        tier,
+        level: effectiveLevel,
+      };
 
       if (promoType === "VILLA") {
         if (!selectedVillaId) {
@@ -87,7 +92,7 @@ export function PromoteForm({ villas, isRealtor }: PromoteFormProps) {
         return;
       }
 
-      router.push(`/dashboard/promotions/${data.promotionId}`);
+      setError(t("common.errorGeneric"));
     } catch {
       setError(t("common.errorGeneric"));
     } finally {
@@ -95,7 +100,9 @@ export function PromoteForm({ villas, isRealtor }: PromoteFormProps) {
     }
   }
 
-  const currentPrice = priceFor(promoType, tier);
+  const effectiveLevel = promoType === "PROFILE" ? "VIP" : level;
+  const currentPrice = priceFor(promoType, tier, effectiveLevel);
+  const selectedVilla = villas.find((v) => v.id === selectedVillaId);
 
   return (
     <div className="space-y-8">
@@ -137,6 +144,49 @@ export function PromoteForm({ villas, isRealtor }: PromoteFormProps) {
           )}
         </div>
       </section>
+
+      {promoType === "VILLA" && (
+        <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900">{t("promotion.chooseLevel")}</h2>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setLevel("STANDARD")}
+              className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${
+                level === "STANDARD"
+                  ? "border-purple-500 bg-purple-50 ring-1 ring-purple-500"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-purple-600" />
+              <div>
+                <p className="font-medium text-gray-900">{t("promotion.levelStandard")}</p>
+                <p className="mt-1 text-sm text-gray-500">{t("promotion.levelStandardHint")}</p>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={() => setLevel("VIP")}
+              className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${
+                level === "VIP"
+                  ? "border-amber-500 bg-amber-50 ring-1 ring-amber-500"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <Crown className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div>
+                <p className="font-medium text-gray-900">{t("promotion.levelVip")}</p>
+                <p className="mt-1 text-sm text-gray-500">{t("promotion.levelVipHint")}</p>
+              </div>
+            </button>
+          </div>
+          {selectedVilla && level === "STANDARD" && (
+            <p className="mt-3 text-xs text-gray-500">
+              {t("promotion.standardCityNote", { city: selectedVilla.cityName })}
+            </p>
+          )}
+        </section>
+      )}
 
       <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-gray-900">
@@ -239,7 +289,7 @@ export function PromoteForm({ villas, isRealtor }: PromoteFormProps) {
             >
               <p className="font-medium text-gray-900">{t(`promotion.tier.${tierKey}`)}</p>
               <p className="mt-2 text-2xl font-semibold text-purple-700">
-                {priceFor(promoType, tierKey)} ₼
+                {priceFor(promoType, tierKey, effectiveLevel)} ₼
               </p>
             </button>
           ))}

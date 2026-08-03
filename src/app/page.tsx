@@ -9,7 +9,8 @@ import { getSessionUser } from "@/lib/auth";
 import { getUserFavoriteVillaIds } from "@/lib/favorites";
 import {
   searchPublishedVillas,
-  getPromotedVillas,
+  getVipPromotedVillas,
+  getStandardPromotedVillasForCity,
   getPromotedRealtorsWithHighlights,
   parseVillaSearchParams,
   hasSearchFilters,
@@ -41,8 +42,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     ? cities.find((c) => c.id === filters.cityId)?.name
     : undefined;
 
+  // VIP: always on the open home page (no city/search filters).
+  const vipRaw = !searchFiltering ? await getVipPromotedVillas() : [];
+  // STANDARD: only when a city is selected in search.
+  const cityPromoRaw =
+    filters.cityId && !filters.realtorUserId
+      ? await getStandardPromotedVillasForCity(filters.cityId)
+      : [];
+
   const promotedRealtors = searchFiltering ? [] : await getPromotedRealtorsWithHighlights();
-  const promotedVillasRaw = searchFiltering ? [] : await getPromotedVillas(filters);
   const topRatedRaw = searchFiltering
     ? []
     : await getTopRatedVillas(
@@ -52,13 +60,15 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const listingsRaw = await searchPublishedVillas(filters);
 
   const allIds = [
-    ...promotedVillasRaw.map((v) => v.id),
+    ...vipRaw.map((v) => v.id),
+    ...cityPromoRaw.map((v) => v.id),
     ...topRatedRaw.map((v) => v.id),
     ...listingsRaw.map((v) => v.id),
   ];
   const ratingMap = await getRatingMapForVillaIds([...new Set(allIds)]);
 
-  const promotedVillas = enrichVillasWithRatings(promotedVillasRaw, ratingMap);
+  const vipVillas = enrichVillasWithRatings(vipRaw, ratingMap);
+  const cityPromotedVillas = enrichVillasWithRatings(cityPromoRaw, ratingMap);
   const topRatedVillas = topRatedRaw.map((v) => ({
     ...v,
     avgRating: v.avgRating,
@@ -69,6 +79,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const topRatedTitle = cityName
     ? t("home.topRatedCity", { city: cityName })
     : t("home.topRatedAll");
+
+  const cityPromoTitle = cityName
+    ? t("home.promotedInCity", { city: cityName })
+    : t("home.promotedVillas");
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -87,6 +101,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <p className="mt-6 rounded-lg bg-purple-50 px-4 py-3 text-sm text-purple-900">
           {t("home.filteringByRealtor")}
         </p>
+      )}
+
+      {/* VIP promotions — first thing visitors see on the home page */}
+      {!searchFiltering && vipVillas.length > 0 && (
+        <VillaSection
+          title={t("home.vipPromotedVillas")}
+          hint={t("home.vipPromotedVillasHint")}
+          villas={vipVillas}
+          locale={locale}
+          favoriteIds={favoriteSet}
+          isLoggedIn={Boolean(user)}
+        />
       )}
 
       {!searchFiltering && promotedRealtors.length > 0 && (
@@ -119,11 +145,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </section>
       )}
 
-      {!searchFiltering && (
+      {/* STANDARD promotions — only when searching a city */}
+      {cityPromotedVillas.length > 0 && (
         <VillaSection
-          title={t("home.promotedVillas")}
-          hint={t("home.promotedVillasHint")}
-          villas={promotedVillas}
+          title={cityPromoTitle}
+          hint={t("home.promotedInCityHint")}
+          villas={cityPromotedVillas}
           locale={locale}
           favoriteIds={favoriteSet}
           isLoggedIn={Boolean(user)}
